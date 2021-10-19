@@ -17,6 +17,8 @@ def get_data():
                       "/Monkey_data.csv?raw=true "
     df_monkey = pd.read_csv(monkey_data_url)
 
+    print(df_monkey[['Pkg name', 'Exception name']])
+
     for col, item in df_monkey.iterrows():
         folder = item[0]
         bug_report = item[4]
@@ -24,12 +26,11 @@ def get_data():
 
         # Problem: StackTrace not directly in CSV, but only in sub-folders of repository
 
-        print(file)
+        # print(file)
 
 
-def process_text():
-    stack_trace = "java.lang.RuntimeException: Unable to resume activity {net.etuldan.sparss/net.etuldan.sparss.activity.HomeActivity}: java.lang.NullPointerException: Attempt to invoke virtual method 'void net.etuldan.sparss.adapter.DrawerAdapter.a(int)' on a null object reference"
-    words = word_tokenize(stack_trace)
+def process_text(file):
+    words = word_tokenize(file)
     stop_words = set(stopwords.words('english'))
 
     cleaned = []
@@ -41,15 +42,17 @@ def process_text():
     filtered = [w.lower() for w in cleaned if w not in stop_words and w not in set(punctuation) and w != '']
 
     l = WordNetLemmatizer()
-    lemmatized = [l.lemmatize(w) for w in filtered]
+    lemm = [l.lemmatize(w) for w in filtered]
 
     s = PorterStemmer()
-    stemmed = [s.stem(w) for w in filtered]
+    stemm = [s.stem(w) for w in filtered]
 
-    print("Lemmatized:", lemmatized)
-    print("Stemmed:", stemmed)
+    print(f"Lemmatized: {lemm}")
+    print(f"Stemmed: {stemm}")
 
 
 if __name__ == "__main__":
     # get_data()
-    process_text()
+    example_file = "java.lang.RuntimeException: Unable to resume activity {net.etuldan.sparss/net.etuldan.sparss.activity.HomeActivity}: java.lang.NullPointerException: Attempt to invoke virtual method 'void net.etuldan.sparss.adapter.DrawerAdapter.a(int)' on a null object reference"
+    print(f"Original file {example_file}\n")
+    process_text(example_file)

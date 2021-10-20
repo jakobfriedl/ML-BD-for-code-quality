@@ -33,9 +33,11 @@ def process_text(file):
     words = word_tokenize(file)
     stop_words = set(stopwords.words('english'))
 
+    # Split words at punctuation
+    r = re.compile(r'[\s{}]+'.format(re.escape(punctuation)))
     cleaned = []
     for w in words:
-        strings = re.split(r"[.|,'/]", w)
+        strings = r.split(w)
         for s in strings:
             cleaned.append(s)
 
@@ -43,12 +45,12 @@ def process_text(file):
 
     l = WordNetLemmatizer()
     lemm = [l.lemmatize(w) for w in filtered]
+    print(f"Lemmatized: {lemm}")
 
     s = PorterStemmer()
     stemm = [s.stem(w) for w in filtered]
-
-    print(f"Lemmatized: {lemm}")
     print(f"Stemmed: {stemm}")
+
 
 
 if __name__ == "__main__":

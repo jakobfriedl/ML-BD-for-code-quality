@@ -5,8 +5,9 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
+import time
 
-import requests
+# import requests  # Used to get content of github files
 
 
 def get_data():
@@ -40,13 +41,15 @@ def get_data():
     #
     # df_monkey.to_csv(path_or_buf='full_monkey.csv')
 
-    test = pd.read_csv('full_monkey.csv')
-    print(test)
+    df_monkey_data = pd.read_csv('full_monkey.csv')
+    return df_monkey_data
+
 
 def get_stack_traces(session, df, url):
     stack_trace = session.get(url)
     df.append(stack_trace.text.replace('\n', ' '))
     return df
+
 
 def process_text(file):
     words = word_tokenize(file)
@@ -60,7 +63,11 @@ def process_text(file):
         for s in strings:
             cleaned.append(s)
 
-    filtered = [w.lower() for w in cleaned if w not in stop_words and w not in set(punctuation) and w != '']
+    filtered = [w.lower() for w in cleaned          # Convert to Lowercase
+                if w not in stop_words              # Remove Stop words
+                and w not in set(punctuation)       # Remove Special Characters
+                and not w.isdigit()                 # Remove Numbers
+                and w != '']                        # Remove Whitespaces
 
     l = WordNetLemmatizer()
     lemm = [l.lemmatize(w) for w in filtered]
@@ -71,9 +78,20 @@ def process_text(file):
     print(f"Stemmed: {stemm}")
 
 
-
 if __name__ == "__main__":
-    get_data()
-    # example_file = "java.lang.RuntimeException: Unable to resume activity {net.etuldan.sparss/net.etuldan.sparss.activity.HomeActivity}: java.lang.NullPointerException: Attempt to invoke virtual method 'void net.etuldan.sparss.adapter.DrawerAdapter.a(int)' on a null object reference"
-    # print(f"Original file {example_file}\n")
-    # process_text(example_file)
+    # get_data()
+    df = get_data()
+    example_stack_trace = df.iat[0, 8]  # Get StackTrace of first Entry of Dataframe
+    print(f"Original: {example_stack_trace}\n")
+
+    # Start timer
+    start = time.time()
+    process_text(example_stack_trace)
+    # End timer
+    print(f"Finished Text-Processing in {time.time()-start} seconds")
+
+    # only Lemmatization: 0.9846229553222656 seconds
+    # only Stemming: 0.015641450881958008 seconds
+    # both: 1.0480988025665283 seconds
+
+

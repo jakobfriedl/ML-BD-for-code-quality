@@ -72,6 +72,9 @@ def get_stack_traces(session, df, url):
 
 
 def process_text(file, mode):
+    if pd.isnull(file):
+        return []
+
     words = word_tokenize(file)
     stop_words = set(stopwords.words('english'))
 
@@ -93,8 +96,7 @@ def process_text(file, mode):
         l = WordNetLemmatizer()
         lemm = [l.lemmatize(w) for w in filtered]
         return lemm
-
-    if mode == 's':
+    elif mode == 's':
         s = PorterStemmer()
         stem = [s.stem(w) for w in filtered]
         return stem
@@ -105,45 +107,91 @@ def process_stack_trace(dataframe, mode):
 
     for cols, item in dataframe.iterrows():
         print(item[0])  # Print Item ID
-
-        print(process_text(item['Stack Trace'], mode))  # Process Text
+        print(process_text(item.iloc[-1], mode))  # Process Stack Trace
+        # print(process_text(item.['Stack trace'], mode))  # Process Stack Trace
 
     print("Completed:", time.time() - start)
+
+# Too Slow
+#########################
+#def process_stack_trace_by_preprocess(dataframe, mode):
+#     words = []
+#     cleaned = []
+#     filtered = []
+#     stop_words = set(stopwords.words('english'))
+#
+#     for cols, item in dataframe.iterrows():
+#         words_item = word_tokenize(item.iloc[-1])
+#         words.append(words_item)
+#
+#     r = re.compile(r'[\s{}]+'.format(re.escape(punctuation)))
+#     cleaned_item = []
+#     for word_item in words:
+#         for w in word_item:
+#             strings = r.split(w)
+#             for s in strings:
+#                 cleaned_item.append(s)
+#             cleaned.append(cleaned_item)
+#
+#     for cleaned_item in cleaned:
+#         filtered_item = []
+#         filtered_item = [w.lower() for w in cleaned_item  # Convert to Lowercase
+#                          if w not in stop_words  # Remove Stop words
+#                          and w not in set(punctuation)  # Remove Special Characters
+#                          and not w.isdigit()  # Remove Numbers
+#                          and w != '']  # Remove Whitespaces
+#         filtered.append(filtered_item)
+#
+#     for filtered_item in filtered:
+#         if mode == 'l':
+#             l = WordNetLemmatizer()
+#             lemm = [l.lemmatize(w) for w in filtered_item]
+#             print(lemm)
+#         elif mode == 's':
+#             s = PorterStemmer()
+#             stem = [s.stem(w) for w in filtered_item]
+#             print(stem)
 
 
 if __name__ == "__main__":
 
-    # df = pd.read_csv('full_github_issues.csv')
-    df = pd.read_csv('full_monkey.csv')
+    df_github_own = pd.read_csv('full_github_issues.csv')
+    df_monkey_own = pd.read_csv('full_monkey.csv')
 
-    process_stack_trace(df, 's')
+    df_monkey = pd.read_csv('../../data/monkey_data_stack_trace.csv')
+    df_github = pd.read_csv('../../data/github_issues_stack_trace.csv')
+    df_w3c = pd.read_csv('../../data/w3c_test_results_failed.csv')
 
-    # Timing Monkey Data:
+    process_stack_trace(df_monkey, 'l')
+
+    #process_stack_trace_by_preprocess(df, 's')
+
+    # Timing Monkey Data (monkey_data_stack_trace.csv):
     # ---- Stemming ----
-    # * 1. 51.293915033340454
-    # * 2. 52.06282424926758
-    # * 3. 46.19591021537781
+    # * 1. 24.807677030563354
+    # * 2. 24.937902450561523
+    # * 3.
+    # * 4.
     # ---- Lemmatizing ----
-    # * 1. 37.13634729385376
-    # * 2. 37.823638677597046
-    # * 3. 39.39327526092529
+    # * 1. 16.52564287185669
+    # * 2. 16.96170926094055
+    # * 3.
+    # * 4.
 
+    # Timing Github Issues (github_issues_stack_trace):
+    # ---- Stemming ----
+    # * 1. 47.79965376853943
+    # * 2. 45.37876486778259
+    # * 3.
+    # * 4.
+    # ---- Lemmatizing ----
+    # * 1. 31.144325017929077
+    # * 2. 31.442722082138066
+    # * 3.
+    # * 4.
 
+    # Join csv with corresponding stack traces
     # df = get_github_data()
     # df = get_monkey_data()
-
-    # print(df)
-    # example_stack_trace = df.iat[0, 8]  # Get StackTrace of first Entry of Dataframe
-    # print(f"Original: {example_stack_trace}\n")
-    #
-    # # Start timer
-    # start = time.time()
-    # process_text(example_stack_trace)
-    # # End timer
-    # print(f"Finished Text-Processing in {time.time()-start} seconds")
-
-    # only Lemmatization: 0.9846229553222656 seconds
-    # only Stemming: 0.015641450881958008 seconds
-    # both: 1.0480988025665283 seconds
 
 

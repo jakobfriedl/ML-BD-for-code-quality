@@ -1,6 +1,8 @@
 import pandas as pd
 import re
 from string import punctuation
+
+import pywin32_bootstrap
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
@@ -71,14 +73,7 @@ def get_stack_traces(session, df, url):
     return df
 
 
-def process_text(file, mode):
-    if pd.isnull(file):
-        return []
-
-    words = word_tokenize(file)
-    stop_words = set(stopwords.words('english'))
-
-    # Split words at punctuation
+def clean_text(words):
     r = re.compile(r'[\s{}]+'.format(re.escape(punctuation)))
     cleaned = []
     for w in words:
@@ -86,71 +81,67 @@ def process_text(file, mode):
         for s in strings:
             cleaned.append(s)
 
-    filtered = [w.lower() for w in cleaned          # Convert to Lowercase
-                if w not in stop_words              # Remove Stop words
-                and w not in set(punctuation)       # Remove Special Characters
-                and not w.isdigit()                 # Remove Numbers
-                and w != '']                        # Remove Whitespaces
+    return cleaned
 
+
+def filter_text(words):
+    stop_words = set(stopwords.words('english'))
+
+    return [w.lower() for w in words            # Convert to Lowercase
+            if w not in stop_words              # Remove Stop words
+            and w not in set(punctuation)       # Remove Special Characters
+            and not w.isdigit()                 # Remove Numbers
+            and w != '']                        # Remove Whitespaces
+
+
+def stem_text(words, mode):
     if mode == 'l':
         l = WordNetLemmatizer()
-        lemm = [l.lemmatize(w) for w in filtered]
+        lemm = [l.lemmatize(w) for w in words]
         return lemm
     elif mode == 's':
         s = PorterStemmer()
-        stem = [s.stem(w) for w in filtered]
+        stem = [s.stem(w) for w in words]
         return stem
 
 
-def process_stack_trace(dataframe, mode):
+def process_stack_trace_row(stack_trace, mode):
+    if pd.isnull(stack_trace):
+        return []
+
+    # Tokenize Stack Trace
+    words = word_tokenize(stack_trace)
+    # Split words at punctuation
+    cleaned = clean_text(words)
+    # Filter out unnecessary characters
+    filtered = filter_text(cleaned)
+
+    return stem_text(filtered, mode)
+
+
+def process_stack_trace_column(dataframe, mode):
+    stop_words = set(stopwords.words('english'))
+    r = re.compile(r'[\s{}]+'.format(re.escape(punctuation)))
+
+    dataframe.dropna(inplace=True)
+    tokenized = dataframe.iloc[:, -1].apply(word_tokenize)
+    cleaned = tokenized.apply(clean_text)
+    filtered = cleaned.apply(filter_text)
+
+    return filtered.apply(stem_text, mode=mode)
+
+
+def process_stack_trace(dataframe, stem_mode, process_mode):
     start = time.time()
 
-    for cols, item in dataframe.iterrows():
-        print(item[0])  # Print Item ID
-        print(process_text(item.iloc[-1], mode))  # Process Stack Trace
-        # print(process_text(item.['Stack trace'], mode))  # Process Stack Trace
+    if process_mode == 'c':
+        print(process_stack_trace_column(dataframe, stem_mode))
+    else:
+        for cols, item in dataframe.iterrows():
+            print(process_stack_trace_row(item.iloc[-1], stem_mode))  # Process Stack Trace
+            # print(process_stack_trace_row(item['Stack trace'], stem_mode))  # Process Stack Trace
 
     print("Completed:", time.time() - start)
-
-# Too Slow
-#########################
-#def process_stack_trace_by_preprocess(dataframe, mode):
-#     words = []
-#     cleaned = []
-#     filtered = []
-#     stop_words = set(stopwords.words('english'))
-#
-#     for cols, item in dataframe.iterrows():
-#         words_item = word_tokenize(item.iloc[-1])
-#         words.append(words_item)
-#
-#     r = re.compile(r'[\s{}]+'.format(re.escape(punctuation)))
-#     cleaned_item = []
-#     for word_item in words:
-#         for w in word_item:
-#             strings = r.split(w)
-#             for s in strings:
-#                 cleaned_item.append(s)
-#             cleaned.append(cleaned_item)
-#
-#     for cleaned_item in cleaned:
-#         filtered_item = []
-#         filtered_item = [w.lower() for w in cleaned_item  # Convert to Lowercase
-#                          if w not in stop_words  # Remove Stop words
-#                          and w not in set(punctuation)  # Remove Special Characters
-#                          and not w.isdigit()  # Remove Numbers
-#                          and w != '']  # Remove Whitespaces
-#         filtered.append(filtered_item)
-#
-#     for filtered_item in filtered:
-#         if mode == 'l':
-#             l = WordNetLemmatizer()
-#             lemm = [l.lemmatize(w) for w in filtered_item]
-#             print(lemm)
-#         elif mode == 's':
-#             s = PorterStemmer()
-#             stem = [s.stem(w) for w in filtered_item]
-#             print(stem)
 
 
 if __name__ == "__main__":
@@ -162,33 +153,39 @@ if __name__ == "__main__":
     df_github = pd.read_csv('../../data/github_issues_stack_trace.csv')
     df_w3c = pd.read_csv('../../data/w3c_test_results_failed.csv')
 
-    process_stack_trace(df_monkey, 'l')
+    process_stack_trace(df_monkey, stem_mode='l', process_mode='c')
 
-    #process_stack_trace_by_preprocess(df, 's')
-
-    # Timing Monkey Data (monkey_data_stack_trace.csv):
+    # Timing Monkey Data (monkey_data_stack_trace.csv) :
     # ---- Stemming ----
-    # * 1. 24.807677030563354
-    # * 2. 24.937902450561523
-    # * 3.
-    # * 4.
+    # BY ROW:
+    #   * 1. 27.73685073852539
+    #   * 2. 25.155765295028687
+    # BY COL:
+    #   * 1. 22.720109701156616
+    #   * 2. 22.477178812026978
     # ---- Lemmatizing ----
-    # * 1. 16.52564287185669
-    # * 2. 16.96170926094055
-    # * 3.
-    # * 4.
+    # BY ROW:
+    #   * 1. 17.941423892974854
+    #   * 2. 16.916264295578003
+    # BY COL:
+    #   * 1. 14.2380051612854
+    #   * 2. 14.486801385879517
 
     # Timing Github Issues (github_issues_stack_trace):
     # ---- Stemming ----
-    # * 1. 47.79965376853943
-    # * 2. 45.37876486778259
-    # * 3.
-    # * 4.
+    # BY ROW:
+    #   * 1. 52.6889374256134
+    #   * 2. 47.71541500091553
+    # BY COL:
+    #   * 1. 33.59704065322876
+    #   * 2. 35.45515513420105
     # ---- Lemmatizing ----
-    # * 1. 31.144325017929077
-    # * 2. 31.442722082138066
-    # * 3.
-    # * 4.
+    # BY ROW:
+    #   * 1. 33.44994807243347
+    #   * 2. 33.6430242061615
+    # BY COL:
+    #   * 1. 21.004103183746338
+    #   * 2. 21.5268771648407
 
     # Join csv with corresponding stack traces
     # df = get_github_data()

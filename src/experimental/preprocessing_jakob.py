@@ -1,8 +1,6 @@
 import pandas as pd
 import re
 from string import punctuation
-
-import pywin32_bootstrap
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
@@ -68,12 +66,12 @@ def get_github_data():
 
 def get_stack_traces(session, df, url):
     stack_trace = session.get(url)
-    text_content = stack_trace.text.replace('\n', '').replace('\t', '')
-    df.append(text_content)
+    df.append(stack_trace.text)
     return df
 
 
 def clean_text(words):
+    # Split words at punctuation
     r = re.compile(r'[\s{}]+'.format(re.escape(punctuation)))
     cleaned = []
     for w in words:
@@ -85,6 +83,7 @@ def clean_text(words):
 
 
 def filter_text(words):
+    # Filter out unnecessary characters
     stop_words = set(stopwords.words('english'))
 
     return [w.lower() for w in words            # Convert to Lowercase
@@ -111,18 +110,14 @@ def process_stack_trace_row(stack_trace, mode):
 
     # Tokenize Stack Trace
     words = word_tokenize(stack_trace)
-    # Split words at punctuation
+
     cleaned = clean_text(words)
-    # Filter out unnecessary characters
     filtered = filter_text(cleaned)
 
     return stem_text(filtered, mode)
 
 
 def process_stack_trace_column(dataframe, mode):
-    stop_words = set(stopwords.words('english'))
-    r = re.compile(r'[\s{}]+'.format(re.escape(punctuation)))
-
     dataframe.dropna(inplace=True)
     tokenized = dataframe.iloc[:, -1].apply(word_tokenize)
     cleaned = tokenized.apply(clean_text)
@@ -153,7 +148,7 @@ if __name__ == "__main__":
     df_github = pd.read_csv('../../data/github_issues_stack_trace.csv')
     df_w3c = pd.read_csv('../../data/w3c_test_results_failed.csv')
 
-    process_stack_trace(df_monkey, stem_mode='l', process_mode='c')
+    process_stack_trace(df_w3c, stem_mode='l', process_mode='r')
 
     # Timing Monkey Data (monkey_data_stack_trace.csv) :
     # ---- Stemming ----

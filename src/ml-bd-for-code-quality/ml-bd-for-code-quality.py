@@ -77,9 +77,9 @@ def process_stack_trace(dataframe, stem_mode, process_mode):
     start = time.time()
 
     if process_mode == 'c':
-        to_vec_dataframe = process_stack_trace_column(dataframe, stem_mode)
-        print(to_vec_dataframe)
-        # sklearn_vector(to_vec_dataframe)
+        to_vec_dataframe = pd.DataFrame(process_stack_trace_column(dataframe, stem_mode))
+        # print(to_vec_dataframe)
+        sklearn_vector(to_vec_dataframe)
     else:
         for cols, item in dataframe.iterrows():
             print(process_stack_trace_row(item.iloc[-1], stem_mode))  # Process Stack Trace
@@ -90,8 +90,11 @@ def process_stack_trace(dataframe, stem_mode, process_mode):
 
 def sklearn_vector(dataframe):
     print("V1")
-    tfidf_vectorizer = TfidfVectorizer(use_idf=True)
-    tfidf_vectorizer_vectors = tfidf_vectorizer.fit_transform(dataframe)
+    for i in dataframe.iterrows():
+        print(i)
+    # print(dataframe)
+    # tfidf_vectorizer = TfidfVectorizer(use_idf=True)
+    # tfidf_vectorizer_vectors = tfidf_vectorizer.fit_transform(dataframe)
     print("V2")
     # cv = CountVectorizer()
     # word_count_vector = cv.fit_transform(dataframe)

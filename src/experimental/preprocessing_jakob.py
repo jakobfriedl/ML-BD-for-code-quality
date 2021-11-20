@@ -148,7 +148,7 @@ if __name__ == "__main__":
     df_github = pd.read_csv('../../data/github_issues_stack_trace.csv')
     df_w3c = pd.read_csv('../../data/w3c_test_results_failed.csv')
 
-    process_stack_trace(df_w3c, stem_mode='l', process_mode='r')
+    process_stack_trace(df_monkey, stem_mode='l', process_mode='c')
 
     # Timing Monkey Data (monkey_data_stack_trace.csv) :
     # ---- Stemming ----

@@ -9,7 +9,10 @@ from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 
 # Word Embedding
+import spacy
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction.text import CountVectorizer
 
 # Others
 import time
@@ -62,9 +65,6 @@ def process_stack_trace_row(stack_trace, mode):
 
 
 def process_stack_trace_column(dataframe, mode):
-    stop_words = set(stopwords.words('english'))
-    r = re.compile(r'[\s{}]+'.format(re.escape(punctuation)))
-
     dataframe.dropna(inplace=True)
     tokenized = dataframe.iloc[:, -1].apply(word_tokenize)
     cleaned = tokenized.apply(clean_text)
@@ -82,29 +82,87 @@ def process_stack_trace(dataframe, stem_mode, process_mode):
         sklearn_vector(to_vec_dataframe)
     else:
         for cols, item in dataframe.iterrows():
-            print(process_stack_trace_row(item.iloc[-1], stem_mode))  # Process Stack Trace
+            # print(process_stack_trace_row(item.iloc[-1], stem_mode))  # Process Stack Trace
             # print(process_stack_trace_row(item['Stack trace'], stem_mode))  # Process Stack Trace
+            sklearn_vector(process_stack_trace_row(item.iloc[-1], stem_mode))
 
     print("Completed:", time.time() - start)
 
 
 def sklearn_vector(dataframe):
-    print("V1")
-    for i in dataframe.iterrows():
-        print(i)
-    # print(dataframe)
-    # tfidf_vectorizer = TfidfVectorizer(use_idf=True)
-    # tfidf_vectorizer_vectors = tfidf_vectorizer.fit_transform(dataframe)
-    print("V2")
-    # cv = CountVectorizer()
-    # word_count_vector = cv.fit_transform(dataframe)
-    # print("Vector:", word_count_vector.shape)
+    # change the form from lists to Dataframe with strings
+    dfa = []
+    for i in dataframe['Stack trace']:
+        string = ' '.join(i)
+        dfa.append(string)
+        # print(str)
+    dfx = pd.DataFrame(dfa, columns=['StackTrace'])
+    # print(dfx)
 
-    # tfidf_transformer = TfidfTransformer(smooth_idf=True, use_idf=True)
-    # tfidf_transformer.fit(word_count_vector)
-    #
-    # df_idf = pd.DataFrame(tfidf_transformer.idf_, index=cv.get_feature_names_out(), columns=["idf_weights"])
-    # print(df_idf.sort_values(by=['idf_weights']))
+    # call function to vectorize
+    spacy_word_2_vec(dataframe)
+    # sklearn_vector_vectorizer(dfx)
+    # sklearn_vector_transformer(dfx)
+
+
+def spacy_word_2_vec(dataframe):
+    dfa = []
+    for i in dataframe['Stack trace']:
+        string = ' '.join(i)
+        dfa.append(string)
+    dfw = ''.join(dfa)
+    # print(dfw)
+    nlp = spacy.load('en_core_web_md')
+    nlp.max_length = 9000000
+    # run this from a normal command line
+    # python - m spacy download en_core_web_md
+    wec = nlp(dfw)
+    print(wec.vector)
+
+
+def sklearn_vector_vectorizer(dfx):
+    v = TfidfVectorizer()
+    x = v.fit_transform(dfx['StackTrace'])
+
+    # print(x)
+    df = pd.DataFrame(x.toarray(), columns=v.get_feature_names_out())
+    print(df)
+
+
+def sklearn_vector_transformer(dfx):
+    # # create the vector
+    cv = CountVectorizer()
+    word_count_vector = cv.fit_transform(dfx['StackTrace'])
+    print("Vector shape", word_count_vector.shape)
+
+    # calculate the idf values
+    tfidf_transformer = TfidfTransformer(smooth_idf=True, use_idf=True)
+    tfidf_transformer.fit(word_count_vector)
+    df_idf = pd.DataFrame(tfidf_transformer.idf_, index=cv.get_feature_names_out(), columns=["idf_weights"])
+
+    # sort ascending by idf values
+    df_idf_sorted = df_idf.sort_values(by=['idf_weights'])
+
+    # print short versions
+    # print(df_idf)
+    # print(df_idf_sorted)
+
+    # print the whole dataframe
+    # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+    #     print(df_idf_sorted)
+    #     print(df_idf)
+
+    # compute TFIDF score
+    # count matrix
+    count_vector = cv.transform(dfx['StackTrace'])
+    tf_idf_vector = tfidf_transformer.transform(count_vector)
+    feature_names = cv.get_feature_names_out()
+    first_document_vector = tf_idf_vector[0]
+    # print(tf_idf_vector)
+    dff = pd.DataFrame(first_document_vector.T.todense(), index=feature_names, columns=["tfidf"])
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None,):
+        print(dff.sort_values(by=["tfidf"], ascending=True))
+        print(dfx.iloc[0])
 
 
 if __name__ == "__main__":

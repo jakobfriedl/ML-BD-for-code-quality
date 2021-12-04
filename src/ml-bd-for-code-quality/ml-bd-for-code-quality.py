@@ -11,8 +11,6 @@ from nltk.stem.porter import PorterStemmer
 # Word Embedding
 import spacy
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.feature_extraction.text import CountVectorizer
 
 # Others
 import time
@@ -69,100 +67,56 @@ def process_stack_trace_column(dataframe, mode):
     tokenized = dataframe.iloc[:, -1].apply(word_tokenize)
     cleaned = tokenized.apply(clean_text)
     filtered = cleaned.apply(filter_text)
+    dfa = []
 
-    return filtered.apply(stem_text, mode=mode)
+    dataframe = filtered.apply(stem_text, mode=mode)
+    dataframe.apply(lambda row: dfa.append(' '.join(row)))
+    dfx = pd.DataFrame(dfa, columns=['StackTrace'])
+
+    return dfx
 
 
-def process_stack_trace(dataframe, stem_mode, process_mode):
+def process_stack_trace(dataframe, stem_mode, process_mode, vector_mode):
     start = time.time()
 
     if process_mode == 'c':
-        to_vec_dataframe = pd.DataFrame(process_stack_trace_column(dataframe, stem_mode))
-        # print(to_vec_dataframe)
-        sklearn_vector(to_vec_dataframe)
+        to_vec_dataframe = process_stack_trace_column(dataframe, stem_mode)
+        sklearn_vector(to_vec_dataframe, vector_mode)
     else:
         for cols, item in dataframe.iterrows():
-            # print(process_stack_trace_row(item.iloc[-1], stem_mode))  # Process Stack Trace
+            print(process_stack_trace_row(item.iloc[-1], stem_mode))  # Process Stack Trace
             # print(process_stack_trace_row(item['Stack trace'], stem_mode))  # Process Stack Trace
-            sklearn_vector(process_stack_trace_row(item.iloc[-1], stem_mode))
+            # sklearn_vector(process_stack_trace_row(item.iloc[-1], stem_mode))
 
     print("Completed:", time.time() - start)
 
 
-def sklearn_vector(dataframe):
-    # change the form from lists to Dataframe with strings
-    dfa = []
-    for i in dataframe['Stack trace']:
-        string = ' '.join(i)
-        dfa.append(string)
-        # print(str)
-    dfx = pd.DataFrame(dfa, columns=['StackTrace'])
-    # print(dfx)
-
+def sklearn_vector(dataframe, vector_mode):
     # call function to vectorize
-    spacy_word_2_vec(dataframe)
-    # sklearn_vector_vectorizer(dfx)
-    # sklearn_vector_transformer(dfx)
+    if vector_mode == 'wv':
+        spacy_word_2_vec(dataframe)
+    elif vector_mode == 'sv':
+        sklearn_vector_vectorizer(dataframe)
+    else:
+        print("Wrong vector_mode!\nUse:\n  'sv'\n  'wv'")
 
 
 def spacy_word_2_vec(dataframe):
-    dfa = []
-    for i in dataframe['Stack trace']:
-        string = ' '.join(i)
-        dfa.append(string)
-    dfw = ''.join(dfa)
-    # print(dfw)
+    # print(dataframe)
     nlp = spacy.load('en_core_web_md')
-    nlp.max_length = 9000000
-    # run this from a normal command line
-    # python - m spacy download en_core_web_md
-    wec = nlp(dfw)
-    print(wec.vector)
+    # loop every Document and concate to dp.Dataframe
+
+    # wec = nlp(dataframe)
+    # print(wec.vector)
 
 
-def sklearn_vector_vectorizer(dfx):
+def sklearn_vector_vectorizer(dataframe):
+    # print(dataframe)
     v = TfidfVectorizer()
-    x = v.fit_transform(dfx['StackTrace'])
-
+    x = v.fit_transform(dataframe['StackTrace'])
     # print(x)
     df = pd.DataFrame(x.toarray(), columns=v.get_feature_names_out())
     print(df)
-
-
-def sklearn_vector_transformer(dfx):
-    # # create the vector
-    cv = CountVectorizer()
-    word_count_vector = cv.fit_transform(dfx['StackTrace'])
-    print("Vector shape", word_count_vector.shape)
-
-    # calculate the idf values
-    tfidf_transformer = TfidfTransformer(smooth_idf=True, use_idf=True)
-    tfidf_transformer.fit(word_count_vector)
-    df_idf = pd.DataFrame(tfidf_transformer.idf_, index=cv.get_feature_names_out(), columns=["idf_weights"])
-
-    # sort ascending by idf values
-    df_idf_sorted = df_idf.sort_values(by=['idf_weights'])
-
-    # print short versions
-    # print(df_idf)
-    # print(df_idf_sorted)
-
-    # print the whole dataframe
-    # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-    #     print(df_idf_sorted)
-    #     print(df_idf)
-
-    # compute TFIDF score
-    # count matrix
-    count_vector = cv.transform(dfx['StackTrace'])
-    tf_idf_vector = tfidf_transformer.transform(count_vector)
-    feature_names = cv.get_feature_names_out()
-    first_document_vector = tf_idf_vector[0]
-    # print(tf_idf_vector)
-    dff = pd.DataFrame(first_document_vector.T.todense(), index=feature_names, columns=["tfidf"])
-    with pd.option_context('display.max_rows', None, 'display.max_columns', None,):
-        print(dff.sort_values(by=["tfidf"], ascending=True))
-        print(dfx.iloc[0])
 
 
 if __name__ == "__main__":
@@ -174,4 +128,8 @@ if __name__ == "__main__":
     df_github = pd.read_csv('../../data/github_issues_stack_trace.csv')
     df_w3c = pd.read_csv('../../data/w3c_test_results_failed.csv')
 
-    process_stack_trace(df_monkey, stem_mode='l', process_mode='c')
+    process_stack_trace(df_monkey, stem_mode='l', process_mode='c', vector_mode='sv')
+    # Modes:
+    # stem_mode = 'l' || 's'
+    # process_mode = 'c' || 'r' //'r' is not suitable for vector_mode
+    # vector_mode = 'sv' || 'wv'

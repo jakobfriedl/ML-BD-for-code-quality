@@ -104,10 +104,9 @@ def sklearn_vector(dataframe, vector_mode):
 def spacy_word_2_vec(dataframe):
     # print(dataframe)
     nlp = spacy.load('en_core_web_md')
-    # loop every Document and concate to dp.Dataframe
-
-    # wec = nlp(dataframe)
-    # print(wec.vector)
+    print("NLP")
+    docs = list(nlp.pipe(dataframe['StackTrace'], n_process=8))
+    [print(i.vector) for i in docs]
 
 
 def sklearn_vector_vectorizer(dataframe):

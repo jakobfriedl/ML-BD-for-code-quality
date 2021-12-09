@@ -110,17 +110,16 @@ def sklearn_vector(dataframe):
 
 
 def spacy_word_2_vec(dataframe):
-    dfa = []
-    for i in dataframe['Stack trace']:
-        string = ' '.join(i)
-        dfa.append(string)
-    dfw = ''.join(dfa)
-    # print(dfw)
+    # print(dataframe)
     nlp = spacy.load('en_core_web_md')
-    # nlp.max_length = 9000000
-    # loop every Document and concate to dp.Dataframe
-    wec = nlp(dfw)
-    print(wec.vector)
+
+    # wec = []
+    # dataframe["StackTrace"].apply(lambda row: wec.append(nlp(row)))
+    # print(wec)
+
+    print("NLP")
+    docs = list(nlp.pipe(dataframe['StackTrace'], n_process=8))
+    [print(i.vector) for i in docs]
 
 
 def sklearn_vector_vectorizer(dfx):

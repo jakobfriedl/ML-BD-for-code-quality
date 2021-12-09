@@ -28,9 +28,9 @@ tfidf_matrix = pd.DataFrame(vectors.todense(), columns=v.vocabulary_)
 #     print(i, s)
 
 # Reduce tf-idf to 2 dimensions
-pca = PCA(n_components=2).fit(tfidf_matrix)
+pca = PCA(n_components=3000).fit(tfidf_matrix)
 data2D = pca.transform(tfidf_matrix)
-
+# data2D = tfidf_matrix
 for num_clusters in range(2, 10):
     # Create a subplot with 1 row and 2 columns
     fig, (ax1, ax2) = plt.subplots(1, 2)

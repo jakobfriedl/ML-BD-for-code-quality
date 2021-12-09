@@ -104,9 +104,9 @@ def sklearn_vector(dataframe, vector_mode):
 def spacy_word_2_vec(dataframe):
     # print(dataframe)
     nlp = spacy.load('en_core_web_md')
-    print("NLP")
-    docs = list(nlp.pipe(dataframe['StackTrace'], n_process=8))
-    [print(i.vector) for i in docs]
+    docs = dataframe['StackTrace'].apply(lambda x: nlp(x))
+    for index, value in docs.iteritems():
+        print(value.vector)
 
 
 def sklearn_vector_vectorizer(dataframe):
@@ -124,10 +124,10 @@ if __name__ == "__main__":
     # df_monkey_own = pd.read_csv('full_monkey.csv')
 
     df_monkey = pd.read_csv('../../data/monkey_data_stack_trace.csv')
-    df_github = pd.read_csv('../../data/github_issues_stack_trace.csv')
+    df_github = pd.read_csv('../../data/github_issues_stack_trace.csv', encoding='utf-8')
     df_w3c = pd.read_csv('../../data/w3c_test_results_failed.csv')
 
-    process_stack_trace(df_monkey, stem_mode='l', process_mode='c', vector_mode='sv')
+    process_stack_trace(df_github, stem_mode='l', process_mode='c', vector_mode='sv')
     # Modes:
     # stem_mode = 'l' || 's'
     # process_mode = 'c' || 'r' //'r' is not suitable for vector_mode

@@ -12,6 +12,10 @@ from nltk.stem.porter import PorterStemmer
 import spacy
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+# Clustering
+from sklearn.cluster import KMeans
+from sklearn import metrics
+
 # Others
 import time
 
@@ -63,6 +67,7 @@ def process_stack_trace_row(stack_trace, mode):
 
 
 def process_stack_trace_column(dataframe, mode):
+    print("Pre Processing...")
     dataframe.dropna(inplace=True)
     tokenized = dataframe.iloc[:, -1].apply(word_tokenize)
     cleaned = tokenized.apply(clean_text)
@@ -81,22 +86,27 @@ def process_stack_trace(dataframe, stem_mode, process_mode, vector_mode):
 
     if process_mode == 'c':
         to_vec_dataframe = process_stack_trace_column(dataframe, stem_mode)
-        sklearn_vector(to_vec_dataframe, vector_mode)
+        dataframe = sklearn_vector(to_vec_dataframe, vector_mode)
     else:
         for cols, item in dataframe.iterrows():
             print(process_stack_trace_row(item.iloc[-1], stem_mode))  # Process Stack Trace
             # print(process_stack_trace_row(item['Stack trace'], stem_mode))  # Process Stack Trace
             # sklearn_vector(process_stack_trace_row(item.iloc[-1], stem_mode))
 
+    kmeans_function(dataframe)
+
     print("Completed:", time.time() - start)
 
 
 def sklearn_vector(dataframe, vector_mode):
+    print("Word Embedding...")
     # call function to vectorize
     if vector_mode == 'wv':
-        spacy_word_2_vec(dataframe)
+        sklearn_dataframe = spacy_word_2_vec(dataframe)
+        return sklearn_dataframe
     elif vector_mode == 'sv':
-        sklearn_vector_vectorizer(dataframe)
+        sklearn_dataframe = sklearn_vector_vectorizer(dataframe)
+        return sklearn_dataframe
     else:
         print("Wrong vector_mode!\nUse:\n  'sv'\n  'wv'")
 
@@ -105,17 +115,48 @@ def spacy_word_2_vec(dataframe):
     # print(dataframe)
     nlp = spacy.load('en_core_web_md')
     docs = dataframe['StackTrace'].apply(lambda x: nlp(x))
-    for index, value in docs.iteritems():
-        print(value.vector)
+    # for index, value in docs.iteritems():
+    #     print(value.vector)
+
+    return docs
 
 
 def sklearn_vector_vectorizer(dataframe):
-    # print(dataframe)
     v = TfidfVectorizer()
     x = v.fit_transform(dataframe['StackTrace'])
-    # print(x)
     df = pd.DataFrame(x.toarray(), columns=v.get_feature_names_out())
-    print(df)
+    # print(df)
+
+    return df
+
+
+def kmeans_function(dataframe):
+    print("Kmeans...")
+    for num_clusters in range(2, 10):
+        print("\nClusters:")
+        print(num_clusters)
+
+        km = KMeans(n_clusters=num_clusters, n_init=10, random_state=1)
+        km.fit_predict(dataframe)
+
+        print("Labels:")
+        print(km.labels_)
+        print("Centroids:")
+        print(km.cluster_centers_)
+        print("Score:")
+        print(km.score(dataframe))
+        print("Silhouette:")
+        print(metrics.silhouette_score(dataframe, km.labels_, metric='euclidean'))
+    # KMEANS with Word2Vec
+    # km = KMeans(n_clusters=3, n_init=10, random_state=1)
+    # dataframe.apply(lambda x: km.fit_predict(x)
+    # dataframe.apply(lambda x: km.fit_predict(str(x))
+    # dataframe.apply(lambda x: km.fit_predict(x.vector)
+    # for i in dataframe:
+    #     km.fit_predict(i)
+    # for i in dataframe:
+    #     for j in i:
+    #         km.fit_predict(j.vector)
 
 
 if __name__ == "__main__":

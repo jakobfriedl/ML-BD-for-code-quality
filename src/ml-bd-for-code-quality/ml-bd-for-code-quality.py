@@ -115,10 +115,15 @@ def spacy_word_2_vec(dataframe):
     # print(dataframe)
     nlp = spacy.load('en_core_web_md')
     docs = dataframe['StackTrace'].apply(lambda x: nlp(x))
-    # for index, value in docs.iteritems():
-    #     print(value.vector)
+    pdv = []
+    for index, value in docs.iteritems():
+        pdv.append(value.vector)
+        # print(value)
+        # print(value.vector)
 
-    return docs
+    # pdv = pd.DataFrame(pdv)
+
+    return pdv
 
 
 def sklearn_vector_vectorizer(dataframe):
@@ -147,16 +152,6 @@ def kmeans_function(dataframe):
         print(km.score(dataframe))
         print("Silhouette:")
         print(metrics.silhouette_score(dataframe, km.labels_, metric='euclidean'))
-    # KMEANS with Word2Vec
-    # km = KMeans(n_clusters=3, n_init=10, random_state=1)
-    # dataframe.apply(lambda x: km.fit_predict(x)
-    # dataframe.apply(lambda x: km.fit_predict(str(x))
-    # dataframe.apply(lambda x: km.fit_predict(x.vector)
-    # for i in dataframe:
-    #     km.fit_predict(i)
-    # for i in dataframe:
-    #     for j in i:
-    #         km.fit_predict(j.vector)
 
 
 if __name__ == "__main__":
@@ -168,7 +163,7 @@ if __name__ == "__main__":
     df_github = pd.read_csv('../../data/github_issues_stack_trace.csv', encoding='utf-8')
     df_w3c = pd.read_csv('../../data/w3c_test_results_failed.csv')
 
-    process_stack_trace(df_github, stem_mode='l', process_mode='c', vector_mode='sv')
+    process_stack_trace(df_github, stem_mode='l', process_mode='c', vector_mode='wv')
     # Modes:
     # stem_mode = 'l' || 's'
     # process_mode = 'c' || 'r' //'r' is not suitable for vector_mode

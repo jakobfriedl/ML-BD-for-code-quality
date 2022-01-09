@@ -146,6 +146,7 @@ def kmeans_function(dataframe):
 
         print("Labels:")
         print(km.labels_)
+        labels = km.labels_
         print("Centroids:")
         print(km.cluster_centers_)
         print("Score:")
@@ -154,16 +155,19 @@ def kmeans_function(dataframe):
         print(metrics.silhouette_score(dataframe, km.labels_, metric='euclidean'))
 
 
+
+
 if __name__ == "__main__":
 
     # df_github_own = pd.read_csv('full_github_issues.csv')
     # df_monkey_own = pd.read_csv('full_monkey.csv')
 
+    df_comp = pd.read_csv('../../data/monkey_data_stack_trace_entry.csv')
     df_monkey = pd.read_csv('../../data/monkey_data_stack_trace.csv')
     df_github = pd.read_csv('../../data/github_issues_stack_trace.csv', encoding='utf-8')
     df_w3c = pd.read_csv('../../data/w3c_test_results_failed.csv')
 
-    process_stack_trace(df_github, stem_mode='l', process_mode='c', vector_mode='wv')
+    process_stack_trace(df_comp, stem_mode='l', process_mode='c', vector_mode='wv')
     # Modes:
     # stem_mode = 'l' || 's'
     # process_mode = 'c' || 'r' //'r' is not suitable for vector_mode

@@ -1,4 +1,4 @@
-from preprocessing import process_stack_trace_column
+from src.experimental import preprocessing
 import pandas as pd
 import numpy as np
 import time
@@ -25,11 +25,11 @@ def spacy_word_2_vec(dataframe):
         pdv.append(value.vector)
     return pdv
 
-
+print("Started Clustering Comparison!\n")
 start = time.time()
 
 # Preprocessing
-data = process_stack_trace_column(df_monkey, 'l')
+data = preprocessing.process_stack_trace_column(df_monkey, 'l')
 y = data.iloc[:].values
 
 # Word Embedding
@@ -58,7 +58,7 @@ for i in range(20):
     add_values_in_dict(w2v_dict, w2v_result[j], y[j]+"\n")
 
 for key in range(0, 5):
-    print("Cluster:", key)
+    print("Cluster:", key, "\n")
     print("TF-IDF cluster\n")
     if key in tf_idf_dict:
         print(*tf_idf_dict[key], sep="\n")

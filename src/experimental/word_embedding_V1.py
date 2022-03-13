@@ -169,8 +169,8 @@ def sklearn_vector_transformer(dfx):
 
 if __name__ == "__main__":
 
-    # df_github_own = pd.read_csv('full_github_issues.csv')
-    # df_monkey_own = pd.read_csv('full_monkey.csv')
+    # df_github_own = pd.read_csv('../../data/full_github_issues.csv')
+    # df_monkey_own = pd.read_csv('../../data/full_monkey.csv')
 
     df_monkey = pd.read_csv('../../data/monkey_data_stack_trace.csv')
     df_github = pd.read_csv('../../data/github_issues_stack_trace.csv')

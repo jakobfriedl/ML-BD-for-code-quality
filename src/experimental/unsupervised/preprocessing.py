@@ -59,7 +59,7 @@ def get_github_data():
     df_stack_traces = pd.DataFrame({'Stack Trace': github_stack_traces})
     df_github = df_github.join(df_stack_traces)
 
-    df_github.to_csv(path_or_buf='../../data/full_github_issues.csv')
+    df_github.to_csv(path_or_buf='../../../data/full_github_issues.csv')
 
     return df_github
 
@@ -141,12 +141,12 @@ def process_stack_trace(dataframe, stem_mode, process_mode):
 
 if __name__ == "__main__":
 
-    df_github_own = pd.read_csv('../../data/full_github_issues.csv')
-    df_monkey_own = pd.read_csv('../../data/full_monkey.csv')
+    df_github_own = pd.read_csv('../../../data/full_github_issues.csv')
+    df_monkey_own = pd.read_csv('../../../data/full_monkey.csv')
 
-    df_monkey = pd.read_csv('../../data/monkey_data_stack_trace.csv')
-    df_github = pd.read_csv('../../data/github_issues_stack_trace.csv')
-    df_w3c = pd.read_csv('../../data/w3c_test_results_failed.csv')
+    df_monkey = pd.read_csv('../../../data/monkey_data_stack_trace.csv')
+    df_github = pd.read_csv('../../../data/github_issues_stack_trace.csv')
+    df_w3c = pd.read_csv('../../../data/w3c_test_results_failed.csv')
 
     process_stack_trace(df_monkey, stem_mode='l', process_mode='c')
 

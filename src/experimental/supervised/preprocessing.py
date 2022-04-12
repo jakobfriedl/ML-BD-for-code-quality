@@ -43,7 +43,7 @@ def stem_text(words, mode):
         return ' '.join(x for x in stem if x != '\n')
     else:
         print("Invalid mode.")
-        exit()
+        return
 
 
 def process_stack_trace_row(stack_trace, mode):
@@ -76,6 +76,20 @@ def word2vec(dataframe):
     for index, value in docs.iteritems():
         pdv.append(value.vector)
     return pdv
+
+
+def process_stack_trace(dataframe, stem_mode, process_mode):
+    start = time.time()
+
+    if process_mode == 'c':
+        print(process_stack_trace_column(dataframe, stem_mode))
+    else:
+        for cols, item in dataframe.iterrows():
+            print(process_stack_trace_row(item.iloc[-2], stem_mode))  # Process Stack Trace
+            # print(process_stack_trace_row(item['Stack trace'], stem_mode))  # Process Stack Trace
+
+    print("Completed:", time.time() - start)
+
 
 
 if __name__ == "__main__":

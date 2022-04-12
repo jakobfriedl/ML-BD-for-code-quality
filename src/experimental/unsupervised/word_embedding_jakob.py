@@ -9,8 +9,8 @@ from sklearn.metrics import silhouette_score, silhouette_samples
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
-df_monkey = pd.read_csv('../../../data/monkey_data_stack_trace.csv')
-df_github = pd.read_csv('../../../data/github_issues_stack_trace.csv')
+df_monkey = pd.read_csv('../../../data/unsupervised/monkey_data_stack_trace.csv')
+df_github = pd.read_csv('../../../data/unsupervised/github_issues_stack_trace.csv')
 
 start = time.time()
 # Preprocessing

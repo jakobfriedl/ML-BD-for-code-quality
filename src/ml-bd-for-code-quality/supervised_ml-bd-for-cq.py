@@ -16,7 +16,8 @@ print('started')
 
 # Preprocessing
 # df = process_stack_trace_column(df_monkey_labeled, mode="l")
-# df.to_csv('../../data/supervised/monkey_processed.csv') #
+# df.to_csv('../../data/supervised/monkey_processed.csv')
+
 print('preprocessing completed:', time.time() - start)
 
 # Word-Embedding
@@ -28,6 +29,7 @@ print('word-embedding completed:', time.time() - start)
 # Random Forest Classifier
 split = 0.3 # 70:30 split
 features = tf_idf
+# features = w2v
 labels = df['Exception name']
 X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=split)
 
@@ -50,6 +52,17 @@ fig = plt.figure(figsize=(50, 50))
 plot_tree(rfc.estimators_[0],
           class_names=labels,
           filled=True, impurity=True, rounded=True)
+
+# from dtreeviz.trees import dtreeviz
+# from sklearn import preprocessing
+# label_encoder = preprocessing.LabelEncoder()
+# label_encoder.fit(list(df["Exception name"].unique()))
+#
+# viz = dtreeviz(rfc.estimators_[0],
+#                X_train,
+#                y_train,
+#                class_names=list(label_encoder.classes_),
+#                title="1. estimator visualization")
 
 print('completed:', time.time() - start)
 

@@ -1,5 +1,5 @@
 from src.experimental.supervised.preprocessing import process_stack_trace_column, word2vec
-from src.experimental.supervised.classifiers import rfc, svm
+from src.experimental.supervised.classifiers import rfc, svm, mlp
 import pandas as pd
 import time
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -35,5 +35,8 @@ rfc(start, X_train, X_test, y_train, y_test)
 
 # Support Vector Machine
 svm(start, X_train, X_test, y_train, y_test)
+
+# Nerual Network
+mlp(start, X_train, X_test, y_train, y_test, 500, 1000, 1)
 
 print('completed:', time.time() - start)

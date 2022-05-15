@@ -31,10 +31,10 @@ X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=
 print('dataset splitting completed:', time.time() - start)
 
 # Random Forest Classifier
-rfc(start, X_train, X_test, y_train, y_test)
+# rfc(start, X_train, X_test, y_train, y_test)
 
 # Support Vector Machine
-svm(start, X_train, X_test, y_train, y_test)
+# svm(start, X_train, X_test, y_train, y_test)
 
 # Nerual Network
 mlp(start, X_train, X_test, y_train, y_test, 500, 1000, 1)

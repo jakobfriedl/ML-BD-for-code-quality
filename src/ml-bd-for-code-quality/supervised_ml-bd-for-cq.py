@@ -1,5 +1,6 @@
 from src.experimental.supervised.preprocessing import process_stack_trace_column, word2vec
 from src.experimental.supervised.classifiers import rfc, svm, mlp
+from src.experimental.supervised.classifiers_hyper_parameter import rfc_hyper_parameter, svm_hyper_parameter, mlp_hyper_parameter
 import pandas as pd
 import time
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -36,7 +37,16 @@ print('dataset splitting completed:', time.time() - start)
 # Support Vector Machine
 # svm(start, X_train, X_test, y_train, y_test)
 
-# Nerual Network
-mlp(start, X_train, X_test, y_train, y_test, 500, 1000, 1)
+# Neural Network
+# mlp(start, X_train, X_test, y_train, y_test, 500, 1000, 1)
+
+# Random Forest Classifier with Hyperparameter Tuning
+rfc_hyper_parameter(start, X_train, X_test, y_train, y_test)
+
+# Support Vector Machine with Hyperparameter Tuning
+# svm_hyper_parameter(start, X_train, X_test, y_train, y_test)
+
+# Neural Network
+# mlp_hyper_parameter(start, X_train, X_test, y_train, y_test)
 
 print('completed:', time.time() - start)

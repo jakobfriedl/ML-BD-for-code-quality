@@ -2,21 +2,15 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 import time
-import matplotlib.pyplot as plt
-from sklearn.tree import plot_tree
 from sklearn.neural_network import MLPClassifier
 from sklearn.decomposition import PCA
-from sklearn.decomposition import SparsePCA
 from sklearn.preprocessing import MaxAbsScaler
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
-import numpy as np
 
 
 def rfc_hyper_parameter(start_time, X_train, X_test, y_train, y_test):
-    print()
-    print('======================= RANDOM FOREST CLASSIFIER =======================')
-    print()
+    printHeading('RANDOM FOREST CLASSIFIER');
 
     # tuned parameters
     param_grid = [
@@ -27,33 +21,13 @@ def rfc_hyper_parameter(start_time, X_train, X_test, y_train, y_test):
     rfc_hyper.fit(X_train, y_train)  # Train model using training sets
     print('rfc training completed: ', time.time() - start_time)
 
-    print("Best parameters set found on:")
-    print()
-    print(rfc_hyper.best_params_)
-    print()
-    print("Grid scores:")
-    print()
-    means = rfc_hyper.cv_results_["mean_test_score"]
-    stds = rfc_hyper.cv_results_["std_test_score"]
-    for mean, std, params in zip(means, stds, rfc_hyper.cv_results_["params"]):
-        print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
-    print()
-
-    print('----------------------- Test results -----------------------')
-    acc_score = accuracy_score(y_test, rfc_hyper.predict(X_test))
-    print("accuracy_score: ", round(acc_score * 100, 5), "%", sep="")
-
-    print()
-    print('---------------------- Detailed Report ----------------------')
-    y_true, y_pred = y_test, rfc_hyper.predict(X_test)
-    print(classification_report(y_true, y_pred))
-    print()
+    printBestParams(rfc_hyper)
+    printTestResult(y_test, rfc_hyper, X_test)
+    printDetailedResult(y_test, rfc_hyper, X_test)
 
 
 def svm_hyper_parameter(start_time, X_train, X_test, y_train, y_test):
-    print()
-    print('======================= SUPPORT VECTOR MACHINE =======================')
-    print()
+    printHeading('SUPPORT VECTOR MACHINE')
 
     # tuned parameters
     param_grid = [
@@ -65,37 +39,17 @@ def svm_hyper_parameter(start_time, X_train, X_test, y_train, y_test):
     svm_hyper.fit(X_train, y_train)
     print('svm training completed: ', time.time() - start_time)
 
-    print("Best parameters set found on:")
-    print()
-    print(svm_hyper.best_params_)
-    print()
-    print("Grid scores:")
-    print()
-    means = svm_hyper.cv_results_["mean_test_score"]
-    stds = svm_hyper.cv_results_["std_test_score"]
-    for mean, std, params in zip(means, stds, svm_hyper.cv_results_["params"]):
-        print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
-    print()
-
-    print('----------------------- Test results -----------------------')
-    acc_score = accuracy_score(y_test, svm_hyper.predict(X_test))
-    print("accuracy_score: ", round(acc_score * 100, 5), "%", sep="")
-
-    print()
-    print('---------------------- Detailed Report ----------------------')
-    y_true, y_pred = y_test, svm_hyper.predict(X_test)
-    print(classification_report(y_true, y_pred))
-    print()
+    printBestParams(svm_hyper)
+    printTestResult(y_test, svm_hyper, X_test)
+    printDetailedResult(y_test, svm_hyper, X_test)
 
 
 def mlp_hyper_parameter(start_time, X_train, X_test, y_train, y_test):
-    print()
-    print('======================= NEURAL NETWORK =======================')
-    print()
+    printHeading('NEURAL NETWORK')
 
     # tuned parameters
     param_grid = [
-        {'hidden_layer_sizes': [(10, 2), (100, 2), (1000, 2)], 'max_iter': [1000, 1500], 'learning_rate_init': [0.001]},
+        {'hidden_layer_sizes': [(100, 2)], 'max_iter': [1000], 'learning_rate_init': [0.001]},
     ]
 
     # Data scale to have 0 mean and 1 variance
@@ -117,25 +71,34 @@ def mlp_hyper_parameter(start_time, X_train, X_test, y_train, y_test):
 
     print('mlp training completed: ', time.time() - start_time)
 
-    print("Best parameters set found on:")
-    print()
-    print(mlp_hyper.best_params_)
-    print()
-    print("Grid scores:")
-    print()
-    means = mlp_hyper.cv_results_["mean_test_score"]
-    stds = mlp_hyper.cv_results_["std_test_score"]
-    for mean, std, params in zip(means, stds, mlp_hyper.cv_results_["params"]):
+    printBestParams(mlp_hyper)
+    printTestResult(y_test, mlp_hyper, X_test)
+    printDetailedResult(y_test, mlp_hyper, X_test)
+
+
+def printHeading(heading):
+    print('\n======================= ', heading, ' =======================\n')
+
+
+def printBestParams(result):
+    print("\nBest parameters set found on:\n")
+    print(result.best_params_, '\n')
+
+    print("Grid scores:\n")
+    means = result.cv_results_["mean_test_score"]
+    stds = result.cv_results_["std_test_score"]
+    for mean, std, params in zip(means, stds, result.cv_results_["params"]):
         print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
     print()
 
-    print('----------------------- Test results -----------------------')
-    acc_score = accuracy_score(y_test, mlp_hyper.predict(X_test))
-    print("accuracy_score: ", round(acc_score * 100, 5), "%", sep="")
 
-    print()
-    print('---------------------- Detailed Report ----------------------')
-    y_true, y_pred = y_test, mlp_hyper.predict(X_test)
-    print(classification_report(y_true, y_pred))
-    print()
+def printTestResult(y_test, result, X_test):
+    print('\n----------------------- Test results -----------------------')
+    acc_score = accuracy_score(y_test, result.predict(X_test))
+    print("accuracy_score: ", round(acc_score * 100, 5), "%\n", sep="")
 
+
+def printDetailedResult(y_test, result, X_test):
+    print('\n---------------------- Detailed Report ----------------------')
+    y_true, y_pred = y_test, result.predict(X_test)
+    print(classification_report(y_true, y_pred), '\n')

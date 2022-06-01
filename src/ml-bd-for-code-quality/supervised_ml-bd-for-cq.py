@@ -41,12 +41,12 @@ print('dataset splitting completed:', time.time() - start)
 # mlp(start, X_train, X_test, y_train, y_test, 500, 1000, 1)
 
 # Random Forest Classifier with Hyperparameter Tuning
-rfc_hyper_parameter(start, X_train, X_test, y_train, y_test)
+# rfc_hyper_parameter(start, X_train, X_test, y_train, y_test)
 
 # Support Vector Machine with Hyperparameter Tuning
 # svm_hyper_parameter(start, X_train, X_test, y_train, y_test)
 
 # Neural Network
-# mlp_hyper_parameter(start, X_train, X_test, y_train, y_test)
+mlp_hyper_parameter(start, X_train, X_test, y_train, y_test)
 
 print('completed:', time.time() - start)

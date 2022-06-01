@@ -95,21 +95,21 @@ def mlp_hyper_parameter(start_time, X_train, X_test, y_train, y_test):
 
     # tuned parameters
     param_grid = [
-        {'hidden_layer_sizes': [10, 100, 1000], 'max_iter': [1000, 1500], 'learning_rate_init': [0.001]},
+        {'hidden_layer_sizes': [(10, 2), (100, 2), (1000, 2)], 'max_iter': [1000, 1500], 'learning_rate_init': [0.001]},
     ]
 
     # Data scale to have 0 mean and 1 variance
-    # scaler = MaxAbsScaler()
-    # X_train = scaler.fit_transform(X_train)
-    #
-    # pca = PCA(n_components=500)
-    #
-    # # Applying the dimensionality reduction
-    # # toarray() to convert to a dense numpy array
-    # pca.fit(X_train.toarray())
-    # X_train = pca.fit_transform(X_train.toarray())
-    # pca.fit(X_test.toarray())
-    # X_test = pca.transform(X_test.toarray())
+    scaler = MaxAbsScaler()
+    X_train = scaler.fit_transform(X_train)
+
+    pca = PCA(n_components=500)
+
+    # Applying the dimensionality reduction
+    # toarray() to convert to a dense numpy array
+    pca.fit(X_train.toarray())
+    X_train = pca.fit_transform(X_train.toarray())
+    pca.fit(X_test.toarray())
+    X_test = pca.transform(X_test.toarray())
 
     mlp_hyper = GridSearchCV(MLPClassifier(), param_grid)
 

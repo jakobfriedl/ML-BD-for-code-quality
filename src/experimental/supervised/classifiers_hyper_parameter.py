@@ -89,7 +89,7 @@ def mlp_hyper_parameter_grid(start_time, X_train, X_test, y_train, y_test):
 
     # tuned parameters
     param_grid = [
-        {'hidden_layer_sizes': [(100, 2)], 'max_iter': [1000], 'learning_rate_init': [0.001]},
+        {'hidden_layer_sizes': [(100, 1), (100, 2)], 'max_iter': [500, 1000, 1500], 'learning_rate_init': [0.001]},
     ]
 
     # Data scale to have 0 mean and 1 variance
@@ -121,7 +121,7 @@ def mlp_hyper_parameter_random(start_time, X_train, X_test, y_train, y_test):
 
     # tuned parameters
     hidden_layer_sizes = [(100, 1)]
-    max_iter = [int(x) for x in np.linspace(start=1000, stop=5000, num=10)]
+    max_iter = [int(x) for x in np.linspace(start=1000, stop=5000, num=1000)]
     learning_rate_init = [0.001, 0.0001, 0.00001]
 
     param_grid = [

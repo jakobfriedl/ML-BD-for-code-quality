@@ -6,8 +6,8 @@ import spacy
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 
-df_monkey = pd.read_csv('../../data/unsupervised/monkey_data_stack_trace.csv')
-df_github = pd.read_csv('../../data/unsupervised/github_issues_stack_trace.csv')
+df_monkey = pd.read_csv('../../../data/unsupervised/monkey_data_stack_trace.csv')
+df_github = pd.read_csv('../../../data/unsupervised/github_issues_stack_trace.csv')
 
 
 def add_values_in_dict(dictionary, key, value):

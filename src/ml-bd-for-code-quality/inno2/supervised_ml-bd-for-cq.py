@@ -7,9 +7,9 @@ import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 
-df_monkey_labeled = pd.read_csv('../../data/supervised/monkey_selection.csv')
-df_github_labeled = pd.read_csv('../../data/supervised/github_selection.csv')
-df = pd.read_csv('../../data/supervised/monkey_processed.csv')
+df_monkey_labeled = pd.read_csv('../../../data/supervised/monkey_selection.csv')
+df_github_labeled = pd.read_csv('../../../data/supervised/github_selection.csv')
+df = pd.read_csv('../../../data/supervised/monkey_processed.csv')
 
 start = time.time()
 print('started')

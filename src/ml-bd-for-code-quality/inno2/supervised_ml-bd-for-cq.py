@@ -21,8 +21,8 @@ print('started')
 print('preprocessing completed:', time.time() - start)
 
 # Word-Embedding
-#v = TfidfVectorizer(use_idf=True)
-#tf_idf = v.fit_transform(df['Stack trace'])
+v = TfidfVectorizer(use_idf=True)
+tf_idf = v.fit_transform(df['Stack trace'])
 #w2v = word2vec(df['Stack trace'])
 
 transformer = transformer(df['Stack trace'])
@@ -34,7 +34,7 @@ print('word-embedding completed:', time.time() - start)
 
 
 test_size = 0.3  # 70:30 split
-#features = tf_idf
+features = tf_idf
 #features = w2v
 labels = df['Exception name']
 X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=test_size)

@@ -6,6 +6,7 @@ import pandas as pd
 import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
+from src.experimental.transformers.transformer import transformer
 
 df_monkey_labeled = pd.read_csv('../../../data/supervised/monkey_selection.csv')
 df_github_labeled = pd.read_csv('../../../data/supervised/github_selection.csv')
@@ -20,14 +21,21 @@ print('started')
 print('preprocessing completed:', time.time() - start)
 
 # Word-Embedding
-v = TfidfVectorizer(use_idf=True)
-tf_idf = v.fit_transform(df['Stack trace'])
-# w2v = word2vec(df['Stack trace'])
+#v = TfidfVectorizer(use_idf=True)
+#tf_idf = v.fit_transform(df['Stack trace'])
+#w2v = word2vec(df['Stack trace'])
+
+transformer = transformer(df['Stack trace'])
+
+print(transformer)
+
 print('word-embedding completed:', time.time() - start)
 
+
+
 test_size = 0.3  # 70:30 split
-features = tf_idf
-# features = w2v
+#features = tf_idf
+#features = w2v
 labels = df['Exception name']
 X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=test_size)
 print('dataset splitting completed:', time.time() - start)
@@ -57,6 +65,6 @@ print('dataset splitting completed:', time.time() - start)
 # svm_hyper_parameter_random(start, X_train, X_test, y_train, y_test)
 
 # Neural Network with Hyperparameter Tuning (Randomized Search)
-mlp_hyper_parameter_random(start, X_train, X_test, y_train, y_test)
+# mlp_hyper_parameter_random(start, X_train, X_test, y_train, y_test)
 
 print('completed:', time.time() - start)

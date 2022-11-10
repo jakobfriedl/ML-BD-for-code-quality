@@ -14,7 +14,7 @@ df = pd.read_csv('../../../data/supervised/monkey_processed.csv')
 
 
 def transformer(dataframe):
-    model = SentenceTransformer('paraphrase-multilingual-mpnet-base-v2')
+    model = SentenceTransformer('paraphrase-multilingual-mpnet-base-v2', device='cpu')
     # Encode all sentences
     embedding = model.encode(dataframe)
     return embedding
@@ -31,14 +31,14 @@ v = TfidfVectorizer(use_idf=True)
 tf_idf = v.fit_transform(df['Stack trace'])
 # w2v = word2vec(df['Stack trace'])
 
-transformer = transformer(df['Stack trace'])
+transformer = transformer(df['Stack trace'].tolist())
 
 print(transformer)
 
 print('word-embedding completed:', time.time() - start)
 
 test_size = 0.3  # 70:30 split
-features = tf_idf
+features = transformer
 # features = w2v
 labels = df['Exception name']
 X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=test_size)

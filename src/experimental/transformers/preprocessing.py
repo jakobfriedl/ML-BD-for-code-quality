@@ -5,7 +5,11 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
+from special_characters import characters
 import time
+
+def replace_special_characters(words):
+    return [characters[w] if w in characters else w for w in words]
 
 def clean_text(words):
     # Split words at punctuation
@@ -47,7 +51,8 @@ def stem_text(words, mode):
 def process_stack_trace_column(dataframe, mode):
     dataframe.dropna(inplace=True)
     tokenized = dataframe.iloc[:, -1].apply(word_tokenize)
-    cleaned = tokenized.apply(clean_text)
+    replaced = tokenized.apply(replace_special_characters)
+    cleaned = replaced.apply(clean_text)
     filtered = cleaned.apply(filter_text)
 
     dataframe['Code'] = filtered.apply(stem_text, mode=mode)
@@ -55,12 +60,12 @@ def process_stack_trace_column(dataframe, mode):
 
 
 language_dataset = "../../../data/language_data/language_dataset.csv"
-out_file = "../../../data/language_data/processed_language_dataset.csv"
+out_file = "../../../data/language_data/processed_language_dataset_with_special_chars.csv"
 
 start = time.time()
-
 df_languages = pd.read_csv(language_dataset, index_col=0)
 df = process_stack_trace_column(df_languages, mode='l')
+
 df.to_csv(out_file, index=False)
 
 print(time.time() - start)

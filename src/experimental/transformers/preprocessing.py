@@ -5,7 +5,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
-from special_characters import characters
+from experimental.transformers.special_characters import characters
 import time
 
 def replace_special_characters(words):
@@ -48,24 +48,29 @@ def stem_text(words, mode):
         return
 
 
-def process_stack_trace_column(dataframe, mode):
+def process_stack_trace_column(dataframe, data_col, replace_special_chars=False, stem_mode='l'):
+    print("Preprocessing started")
     dataframe.dropna(inplace=True)
-    tokenized = dataframe.iloc[:, -1].apply(word_tokenize)
-    replaced = tokenized.apply(replace_special_characters)
-    cleaned = replaced.apply(clean_text)
+    tokenized = dataframe[data_col].apply(word_tokenize)
+    if replace_special_chars:
+        replaced = tokenized.apply(replace_special_characters)
+        cleaned = replaced.apply(clean_text)
+    else:
+        cleaned = tokenized.apply(clean_text)
     filtered = cleaned.apply(filter_text)
 
-    dataframe['Code'] = filtered.apply(stem_text, mode=mode)
+    dataframe[data_col] = filtered.apply(stem_text, mode=stem_mode)
+    print("Preprocessing finished")
     return dataframe
 
 
-language_dataset = "../../../data/language_data/language_dataset.csv"
-out_file = "../../../data/language_data/processed_language_dataset_with_special_chars.csv"
-
-start = time.time()
-df_languages = pd.read_csv(language_dataset, index_col=0)
-df = process_stack_trace_column(df_languages, mode='l')
-
-df.to_csv(out_file, index=False)
-
-print(time.time() - start)
+# language_dataset = "../../../data/language_data/language_dataset.csv"
+# out_file = "../../../data/language_data/processed_language_dataset_with_special_chars_2.csv"
+#
+# start = time.time()
+# df_languages = pd.read_csv(language_dataset, index_col=0)
+# df = process_stack_trace_column(df_languages, "Code", replace_special_chars=True, stem_mode='l')
+#
+# df.to_csv(out_file, index=False)
+#
+# print(time.time() - start)

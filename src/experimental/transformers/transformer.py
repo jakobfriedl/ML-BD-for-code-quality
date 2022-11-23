@@ -17,7 +17,7 @@ df = pd.read_csv('../../../data/supervised/monkey_processed.csv')
 def transformer(dataframe):
     model = SentenceTransformer('paraphrase-multilingual-mpnet-base-v2', device='cpu')
     # Encode all sentences
-    embedding = model.encode(dataframe)
+    embedding = model.encode(dataframe, convert_to_numpy=True)
     return embedding
 
 
@@ -36,8 +36,9 @@ tf_idf = v.fit_transform(df['Stack trace'])
 transformer_result = transformer(df['Stack trace'].tolist())
 # dataframe = pd.DataFrame(transformer_result)
 # dataframe.to_csv('transformer_result.csv')
+print(transformer_result)
 
-np.savetxt("GFG.csv" ,transformer_result ,delimiter =" ", fmt ='% s')
+np.savetxt("GFG.csv", transformer_result, delimiter=", ", fmt='% s')
 
 # read from csv
 # transformer_result = pd.read_csv('transformer_result.csv')
@@ -65,7 +66,7 @@ print('dataset splitting completed:', time.time() - start)
 # Neural Network
 # mlp(start, X_train, X_test, y_train, y_test, 500, 1000, 1)
 
-#Neural Network for Transformer
+# Neural Network for Transformer
 mlp_transf(start, X_train, X_test, y_train, y_test, 500, 1000, 1)
 
 print('completed:', time.time() - start)

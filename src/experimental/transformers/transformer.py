@@ -38,7 +38,7 @@ transformer_result = transformer(df['Stack trace'].tolist())
 # dataframe.to_csv('transformer_result.csv')
 print(transformer_result)
 
-np.savetxt("GFG.csv", transformer_result, delimiter=", ", fmt='% s')
+np.savetxt("GFGFG.csv", transformer_result, delimiter=", ", fmt='% s')
 
 # read from csv
 # transformer_result = pd.read_csv('transformer_result.csv')

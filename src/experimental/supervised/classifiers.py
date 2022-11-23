@@ -150,8 +150,8 @@ def mlp_transf(start, X_train, X_test, y_train, y_test, pca_components, neurons,
     # toarray() to convert to a dense numpy array
     pca.fit(X_train)
     X_train = pca.fit_transform(X_train)
-    pca.fit(X_test.toarray())
-    X_test = pca.transform(X_test.toarray())
+    pca.fit(X_test)
+    X_test = pca.transform(X_test)
 
     # PCA Plots
     # 2D Plot

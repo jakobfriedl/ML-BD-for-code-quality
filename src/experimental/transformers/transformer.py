@@ -1,5 +1,5 @@
 from src.experimental.supervised.preprocessing import process_stack_trace_column, word2vec
-from src.experimental.supervised.classifiers import rfc, svm, mlp
+from src.experimental.supervised.classifiers import rfc, svm, mlp, mlp_transf
 from src.experimental.supervised.classifiers_hyper_parameter import rfc_hyper_parameter_grid, svm_hyper_parameter_grid, \
     mlp_hyper_parameter_grid, rfc_hyper_parameter_random, svm_hyper_parameter_random, mlp_hyper_parameter_random
 import pandas as pd
@@ -52,5 +52,8 @@ print('dataset splitting completed:', time.time() - start)
 
 # Neural Network
 # mlp(start, X_train, X_test, y_train, y_test, 500, 1000, 1)
+
+#Neural Network for Transformer
+mlp_transf(start, X_train, X_test, y_train, y_test, 500, 1000, 1)
 
 print('completed:', time.time() - start)

@@ -16,7 +16,7 @@ df = pd.read_csv('../../../data/supervised/monkey_processed.csv')
 
 def transformer(dataframe):
     model = SentenceTransformer('paraphrase-multilingual-mpnet-base-v2', device='cpu')
-    # Encode all sentences
+    # Encode all sentences and return as numpy array
     embedding = model.encode(dataframe, convert_to_numpy=True)
     return embedding
 
@@ -33,20 +33,11 @@ tf_idf = v.fit_transform(df['Stack trace'])
 # w2v = word2vec(df['Stack trace'])
 
 # save to csv
-transformer_result = transformer(df['Stack trace'].tolist())
-# dataframe = pd.DataFrame(transformer_result)
-# dataframe.to_csv('transformer_result.csv')
-print(transformer_result)
-
-np.savetxt("GFGFG.csv", transformer_result, delimiter=", ", fmt='% s')
+# np.savetxt("test.csv", transformer_result, delimiter=", ", fmt='% s')
 
 # read from csv
-# transformer_result = pd.read_csv('transformer_result.csv')
-# transformer_result = transformer_result.values.tolist()
-# transformer_list = [list(row) for row in transformer_result.values]
-# transformer_list[:,1:]
-
-# print(transformer_list)
+transformer_result = np.loadtxt('../../../data/transformer/transformer_paraphrase-multilingual-mpnet-base-v2_github-monkey.csv', delimiter=',', dtype=float)
+print(transformer_result)
 
 print('word-embedding completed:', time.time() - start)
 
@@ -61,12 +52,9 @@ print('dataset splitting completed:', time.time() - start)
 # rfc(start, X_train, X_test, y_train, y_test)
 
 # Support Vector Machine
-# svm(start, X_train, X_test, y_train, y_test)
-
-# Neural Network
-# mlp(start, X_train, X_test, y_train, y_test, 500, 1000, 1)
+svm(start, X_train, X_test, y_train, y_test)
 
 # Neural Network for Transformer
-mlp_transf(start, X_train, X_test, y_train, y_test, 500, 1000, 1)
+# mlp_transf(start, X_train, X_test, y_train, y_test, 500, 1000, 1)
 
 print('completed:', time.time() - start)

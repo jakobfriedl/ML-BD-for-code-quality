@@ -64,13 +64,13 @@ def process_stack_trace_column(dataframe, data_col, replace_special_chars=False,
     return dataframe
 
 
-# language_dataset = "../../../data/language_data/language_dataset.csv"
-# out_file = "../../../data/language_data/processed_language_dataset_with_special_chars_2.csv"
-#
-# start = time.time()
-# df_languages = pd.read_csv(language_dataset, index_col=0)
-# df = process_stack_trace_column(df_languages, "Code", replace_special_chars=True, stem_mode='l')
-#
-# df.to_csv(out_file, index=False)
-#
-# print(time.time() - start)
+language_dataset = "../../../data/language_data/language_dataset.csv"
+out_file = "../../../data/language_data/v2_processed_language_dataset_with_special_chars.csv"
+
+start = time.time()
+df_languages = pd.read_csv(language_dataset)
+df = process_stack_trace_column(df_languages, "Code", replace_special_chars=True, stem_mode='l')
+
+df.to_csv(out_file, index=False)
+
+print(time.time() - start)

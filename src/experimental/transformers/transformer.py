@@ -7,6 +7,7 @@ import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sentence_transformers import SentenceTransformer
+import numpy as np
 
 df_monkey_labeled = pd.read_csv('../../../data/supervised/monkey_selection.csv')
 df_github_labeled = pd.read_csv('../../../data/supervised/github_selection.csv')
@@ -31,13 +32,20 @@ v = TfidfVectorizer(use_idf=True)
 tf_idf = v.fit_transform(df['Stack trace'])
 # w2v = word2vec(df['Stack trace'])
 
-transformer_result = transformer(df['Stack trace'].tolist())
-
 # save to csv
-dataframe = pd.DataFrame(transformer_result)
-dataframe.to_csv('transformer_result.csv')
+transformer_result = transformer(df['Stack trace'].tolist())
+# dataframe = pd.DataFrame(transformer_result)
+# dataframe.to_csv('transformer_result.csv')
 
-print(transformer_result)
+np.savetxt("GFG.csv" ,transformer_result ,delimiter =" ", fmt ='% s')
+
+# read from csv
+# transformer_result = pd.read_csv('transformer_result.csv')
+# transformer_result = transformer_result.values.tolist()
+# transformer_list = [list(row) for row in transformer_result.values]
+# transformer_list[:,1:]
+
+# print(transformer_list)
 
 print('word-embedding completed:', time.time() - start)
 

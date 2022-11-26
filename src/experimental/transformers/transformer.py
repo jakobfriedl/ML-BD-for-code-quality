@@ -151,11 +151,13 @@ for col, df in data_dict.items():
 # Preprocessing
 print('preprocessing completed:', time.time() - start)
 
+"""
+#?: This should be not nessecary any more, because embedding is done by SentenceTransformer()
 # Word-Embedding
 v = TfidfVectorizer(use_idf=True)
 tf_idf = v.fit_transform(df_github_monkey['Stack trace'])
 # w2v = word2vec(df_github_monkey['Stack trace'])
-
+"""
 
 all_transformer_files = get_transformer_files()
 

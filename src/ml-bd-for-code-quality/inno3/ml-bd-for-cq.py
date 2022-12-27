@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import PySimpleGUI_Events as sge
 import pandas as pd
-from lib import process_stack_trace_column, word_embedding, k_means
+from lib import process_stack_trace_column, word_embedding, k_means, rfc, svm, mlp
 from sklearn.model_selection import train_test_split
 import time
 
@@ -26,13 +26,13 @@ RADIO_LABELED_KEY = "-RAD-LABELED-"
 RADIO_UNLABELED_KEY = "-RAD-UNLABELED-"
 LOG_KEY = "-LOG-"
 COMPUTE_KEY = "-BTN-COMPUTE-"
+TRANSFORMER_KEY = "-USE-TRANSFORMER-"
 
 # Keys for clustering algorithms
 KMEANS_KEY = "-RAD-KMEANS-"
 RFC_KEY = "-RAD-RFC-"
 SVM_KEY = "-RAD-SVM-"
 MLP_KEY = "-RAD-MLP-"
-TRANSFORMER_KEY = "-RAD-TRANSFORMER-"
 
 # Radio Groups
 DATASET_TYPE = "dataset-type"
@@ -125,14 +125,24 @@ def _compute_handler(values, application_data):
     elif values[RFC_KEY]:
         # Random Forest
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering started. [Random Forest Classifier] {time.time()-start}\n")
+        result = rfc(tf_idf, df[label_col], test_size=0.3, estimators=100, max_depth=100)
+        print(result)
+        application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Random Forest Classifier] {time.time()-start}\n")
 
     elif values[SVM_KEY]:
         # Support Vector Machine
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering started. [Support Vector Machine] {time.time()-start}\n")
+        result = svm(tf_idf, df[label_col], test_size=0.3)
+        print(result)
+        application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Support Vector Machine] {time.time()-start}\n")
 
     elif values[MLP_KEY]:
         # Neural Network
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering started. [Neural Network] {time.time()-start}\n")
+        result = mlp(tf_idf, df[label_col], test_size=0.3, pca_components=500, neurons=1000, hidden_layer=1)
+        print(result)
+        application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Neural Network] {time.time()-start}\n")
+
 
 compute_handler = sge.SimpleHandler(COMPUTE_KEY, _compute_handler)
 

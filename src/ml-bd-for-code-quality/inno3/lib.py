@@ -71,7 +71,20 @@ def word_embedding(df, data_col):
     return v.fit_transform(df[data_col])
 
 ## KMeans
-def k_means(tf_idf, n_clusters):
+def k_means(tf_idf, n_clusters, transformer):
     km = KMeans(n_clusters, random_state=1)
     model = km.fit(tf_idf)
     return model.predict(tf_idf)
+
+## Random Forest Classifier
+def rfc(features, labels, test_size, estimators, max_depth, transformer):
+    print("TODO")
+
+## Support Vector Machine
+def svm(features, labels, test_size, kernel, use_transformer):
+    print("TODO")
+
+## Neural Network
+def mlp(features, labels, test_size, pca_components, neurons, hidden_layer, transformer):
+    print("TODO")
+

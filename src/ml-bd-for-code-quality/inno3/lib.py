@@ -81,7 +81,7 @@ def rfc(features, labels, test_size, estimators, max_depth, transformer):
     print("TODO")
 
 ## Support Vector Machine
-def svm(features, labels, test_size, kernel, use_transformer):
+def svm(features, labels, test_size, kernel, transformer):
     print("TODO")
 
 ## Neural Network

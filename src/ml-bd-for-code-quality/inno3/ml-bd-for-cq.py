@@ -34,9 +34,50 @@ RFC_KEY = "-RAD-RFC-"
 SVM_KEY = "-RAD-SVM-"
 MLP_KEY = "-RAD-MLP-"
 
+# Algorithm Parameters:
+KMEANS_PARAMETER_FRAME = "-KMEANS-PARAMETER-FRAME-"
+RFC_PARAMETER_FRAME = "-RFC-PARAMETER-FRAME-"
+SVM_PARAMETER_FRAME = "-SVM-PARAMETER-FRAME-"
+MLP_PARAMETER_FRAME = "-MLP-PARAMETER-FRAME-"
+
+N_CLUSTERS = "-KMEANS-N-CLUSTERS-"
+RANDOM_STATE = "-KMEANS-RANDOM-STATE-"
+TEST_SIZE = "-TEST-SIZE-"
+N_ESTIMATORS = "-RFC-ESTIMATORS-"
+MAX_DEPTH = "-RFC-MAX-DEPTH-"
+KERNEL_TYPE = "-SVM-KERNEL-TYPE-"
+PCA_COMPONENTS = "-MLP-PCA-"
+N_NEURONS = "-MLP-NEURONS-"
+N_HIDDEN_LAYER = "-MLP-HIDDEN-LAYER-"
+
 # Radio Groups
 DATASET_TYPE = "dataset-type"
 ALGORITHM = "algorithm"
+
+# Algorithm specific parameter layouts:
+kmeans_params = [
+    [sg.Text("Number of Clusters: ", size=(15, 1)), sg.InputText(size=(5, 1), key=N_CLUSTERS, default_text=10)],
+    [sg.Text("Random State: ", size=(15, 1)), sg.InputText(size=(5, 1), key=RANDOM_STATE, default_text=1)],
+]
+
+rfc_params = [
+    [sg.Text("Test-Size:", size=(15, 1)), sg.Slider(range=(0, 1), orientation='horizontal', size=(15,4), default_value=0.3, resolution=0.01, key=TEST_SIZE)],
+    [sg.Text("Estimators: ", size=(15, 1)), sg.InputText(size=(5, 1), key=N_ESTIMATORS, default_text=100)],
+    [sg.Text("Max. Depth: ", size=(15, 1)), sg.InputText(size=(5, 1), key=MAX_DEPTH), sg.Text("(Leave blank for: max_depth=None)")],
+]
+
+svm_kernel_types = ['linear', 'poly', 'rbf']
+svm_params = [
+    [sg.Text("Test-Size:", size=(15, 1)), sg.Slider(range=(0, 1), orientation='horizontal', size=(15,4), default_value=0.3, resolution=0.01, key=TEST_SIZE)],
+    [sg.Text("Kernel Type:", size=(15, 1)), sg.Combo(values=svm_kernel_types, readonly=True, size=(15,1), key=KERNEL_TYPE, default_value='linear')]
+]
+
+mlp_params = [
+    [sg.Text("Test-Size:", size=(15, 1)), sg.Slider(range=(0, 1), orientation='horizontal', size=(15,4), default_value=0.3, resolution=0.01, key=TEST_SIZE)],
+    [sg.Text("PCA Components: ", size=(15, 1)), sg.InputText(size=(5, 1), key=PCA_COMPONENTS, default_text=500)],
+    [sg.Text("Neurons: ", size=(15, 1)), sg.InputText(size=(5, 1), key=N_NEURONS, default_text=1000)],
+    [sg.Text("Hidden Layer: ", size=(15, 1)), sg.InputText(size=(5, 1), key=N_HIDDEN_LAYER, default_text=1)],
+]
 
 # Event Handlers
 def _read_handler(values, application_data):
@@ -82,6 +123,38 @@ def _radio_unlabeled_handler(values, application_data):
     application_data.window[MLP_KEY].update(disabled=True)
 
 radio_unlabeled_handler = sge.SimpleHandler(RADIO_UNLABELED_KEY, _radio_unlabeled_handler)
+
+def _kmeans_parameter_handler(values, application_data):
+    application_data.window[KMEANS_PARAMETER_FRAME].update(visible=True)
+    application_data.window[RFC_PARAMETER_FRAME].update(visible=False)
+    application_data.window[SVM_PARAMETER_FRAME].update(visible=False)
+    application_data.window[MLP_PARAMETER_FRAME].update(visible=False)
+
+kmeans_parameter_handler = sge.SimpleHandler(KMEANS_KEY, _kmeans_parameter_handler)
+
+def _rfc_parameter_handler(values, application_data):
+    application_data.window[KMEANS_PARAMETER_FRAME].update(visible=False)
+    application_data.window[RFC_PARAMETER_FRAME].update(visible=True)
+    application_data.window[SVM_PARAMETER_FRAME].update(visible=False)
+    application_data.window[MLP_PARAMETER_FRAME].update(visible=False)
+
+rfc_parameter_handler = sge.SimpleHandler(RFC_KEY, _rfc_parameter_handler)
+
+def _svm_parameter_handler(values, application_data):
+    application_data.window[KMEANS_PARAMETER_FRAME].update(visible=False)
+    application_data.window[RFC_PARAMETER_FRAME].update(visible=False)
+    application_data.window[SVM_PARAMETER_FRAME].update(visible=True)
+    application_data.window[MLP_PARAMETER_FRAME].update(visible=False)
+
+svm_parameter_handler = sge.SimpleHandler(SVM_KEY, _svm_parameter_handler)
+
+def _rfc_parameter_handler(values, application_data):
+    application_data.window[KMEANS_PARAMETER_FRAME].update(visible=False)
+    application_data.window[RFC_PARAMETER_FRAME].update(visible=False)
+    application_data.window[SVM_PARAMETER_FRAME].update(visible=False)
+    application_data.window[MLP_PARAMETER_FRAME].update(visible=True)
+
+mlp_parameter_handler = sge.SimpleHandler(MLP_KEY, _rfc_parameter_handler)
 
 def _compute_handler(values, application_data):
     print(values, application_data)
@@ -143,7 +216,6 @@ def _compute_handler(values, application_data):
         print(result)
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Neural Network] {time.time()-start}\n")
 
-
 compute_handler = sge.SimpleHandler(COMPUTE_KEY, _compute_handler)
 
 # Layout
@@ -186,6 +258,10 @@ layout = [
                 sg.Radio("Support Vector Machine", group_id=ALGORITHM, key=SVM_KEY, disabled=True),
                 sg.Radio("Neural Network", group_id=ALGORITHM, key=MLP_KEY, disabled=True),
              ],
+            [sg.Frame("Parameters:", layout=kmeans_params, key=KMEANS_PARAMETER_FRAME, visible=True)],
+            [sg.Frame("Parameters:", layout=rfc_params, key=RFC_PARAMETER_FRAME, visible=True)],
+            [sg.Frame("Parameters:", layout=svm_params, key=SVM_PARAMETER_FRAME, visible=True)],
+            [sg.Frame("Parameters:", layout=mlp_params, key=MLP_PARAMETER_FRAME, visible=True)],
             [sg.Button("Compute", key=COMPUTE_KEY)]
         ], key=CLUSTERING_FRAME, visible=False)
     ],
@@ -202,6 +278,10 @@ event_manager += read_handler
 event_manager += compute_handler
 event_manager += radio_labeled_handler
 event_manager += radio_unlabeled_handler
+event_manager += kmeans_parameter_handler
+event_manager += rfc_parameter_handler
+event_manager += svm_parameter_handler
+event_manager += mlp_parameter_handler
 
 # Window
 window = sg.Window("ML-BD for Code Quality", layout, resizable=True)

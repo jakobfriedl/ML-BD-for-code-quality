@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import PySimpleGUI_Events as sge
 import pandas as pd
-from lib import process_stack_trace_column, word_embedding, k_means, rfc, svm, mlp
+from lib import process_stack_trace_column, word_embedding, k_means_gui, rfc_gui, svm_gui, mlp_gui
 from sklearn.model_selection import train_test_split
 import time
 
@@ -191,29 +191,44 @@ def _compute_handler(values, application_data):
     if values[KMEANS_KEY]:
         # K-Means
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering started. [K-Means] {time.time()-start}\n")
-        result = k_means(tf_idf, n_clusters=5)
+        result = k_means_gui(tf_idf, n_clusters=5)
         print(result)
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [K-Means] {time.time()-start}\n")
 
     elif values[RFC_KEY]:
         # Random Forest
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering started. [Random Forest Classifier] {time.time()-start}\n")
-        result = rfc(tf_idf, df[label_col], test_size=0.3, estimators=100, max_depth=100)
-        print(result)
+        if use_transformer:
+            #result = rfc_transformer_gui(df[label_col], model, )
+            #print(result)
+            print("not implemented yet")
+        else:
+            result = rfc_gui(tf_idf, df[label_col], test_size=0.3, estimators=100, max_depth=100)
+            print(result)
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Random Forest Classifier] {time.time()-start}\n")
 
     elif values[SVM_KEY]:
         # Support Vector Machine
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering started. [Support Vector Machine] {time.time()-start}\n")
-        result = svm(tf_idf, df[label_col], test_size=0.3)
-        print(result)
+        if use_transformer:
+            #result = svm_transformer_gui(df[label_col], model, )
+            #print(result)
+            print("not implemented yet")
+        else:
+            result = svm_gui(tf_idf, df[label_col], test_size=0.3, kernel=values[KERNEL_TYPE])
+            print(result)
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Support Vector Machine] {time.time()-start}\n")
 
     elif values[MLP_KEY]:
         # Neural Network
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering started. [Neural Network] {time.time()-start}\n")
-        result = mlp(tf_idf, df[label_col], test_size=0.3, pca_components=500, neurons=1000, hidden_layer=1)
-        print(result)
+        if use_transformer:
+            #result = mlp_transformer_gui(df[label_col], model, )
+            #print(result)
+            print("not implemented yet")
+        else:
+            result = mlp_gui(tf_idf, df[label_col], test_size=0.3, pca_components=500, neurons=1000, hidden_layer=1)
+            print(result)
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Neural Network] {time.time()-start}\n")
 
 compute_handler = sge.SimpleHandler(COMPUTE_KEY, _compute_handler)

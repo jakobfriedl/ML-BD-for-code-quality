@@ -105,26 +105,44 @@ def _read_handler(values, application_data):
 read_handler = sge.SimpleHandler(LOAD_KEY, _read_handler)
 
 def _radio_labeled_handler(values, application_data):
+    application_data.window[COMPUTE_KEY].update(disabled=True)
+
     application_data.window[COL_LABEL_TEXT].update(visible=True)
     application_data.window[COL_LABEL_KEY].update(visible=True)
+
     application_data.window[KMEANS_KEY].update(disabled=True)
+    application_data.window[KMEANS_KEY].update(False)
     application_data.window[RFC_KEY].update(disabled=False)
     application_data.window[SVM_KEY].update(disabled=False)
     application_data.window[MLP_KEY].update(disabled=False)
 
+    application_data.window[KMEANS_PARAMETER_FRAME].update(visible=False)
+
 radio_labeled_handler = sge.SimpleHandler(RADIO_LABELED_KEY, _radio_labeled_handler)
 
 def _radio_unlabeled_handler(values, application_data):
+    application_data.window[COMPUTE_KEY].update(disabled=True)
+
     application_data.window[COL_LABEL_TEXT].update(visible=False)
     application_data.window[COL_LABEL_KEY].update(visible=False)
+
     application_data.window[KMEANS_KEY].update(disabled=False)
     application_data.window[RFC_KEY].update(disabled=True)
+    application_data.window[RFC_KEY].update(False)
     application_data.window[SVM_KEY].update(disabled=True)
+    application_data.window[SVM_KEY].update(False)
     application_data.window[MLP_KEY].update(disabled=True)
+    application_data.window[MLP_KEY].update(False)
+
+    application_data.window[RFC_PARAMETER_FRAME].update(visible=False)
+    application_data.window[SVM_PARAMETER_FRAME].update(visible=False)
+    application_data.window[MLP_PARAMETER_FRAME].update(visible=False)
 
 radio_unlabeled_handler = sge.SimpleHandler(RADIO_UNLABELED_KEY, _radio_unlabeled_handler)
 
 def _kmeans_parameter_handler(values, application_data):
+    application_data.window[COMPUTE_KEY].update(disabled=False)
+
     application_data.window[KMEANS_PARAMETER_FRAME].update(visible=True)
     application_data.window[RFC_PARAMETER_FRAME].update(visible=False)
     application_data.window[SVM_PARAMETER_FRAME].update(visible=False)
@@ -133,6 +151,8 @@ def _kmeans_parameter_handler(values, application_data):
 kmeans_parameter_handler = sge.SimpleHandler(KMEANS_KEY, _kmeans_parameter_handler)
 
 def _rfc_parameter_handler(values, application_data):
+    application_data.window[COMPUTE_KEY].update(disabled=False)
+
     application_data.window[KMEANS_PARAMETER_FRAME].update(visible=False)
     application_data.window[RFC_PARAMETER_FRAME].update(visible=True)
     application_data.window[SVM_PARAMETER_FRAME].update(visible=False)
@@ -141,6 +161,8 @@ def _rfc_parameter_handler(values, application_data):
 rfc_parameter_handler = sge.SimpleHandler(RFC_KEY, _rfc_parameter_handler)
 
 def _svm_parameter_handler(values, application_data):
+    application_data.window[COMPUTE_KEY].update(disabled=False)
+
     application_data.window[KMEANS_PARAMETER_FRAME].update(visible=False)
     application_data.window[RFC_PARAMETER_FRAME].update(visible=False)
     application_data.window[SVM_PARAMETER_FRAME].update(visible=True)
@@ -149,6 +171,8 @@ def _svm_parameter_handler(values, application_data):
 svm_parameter_handler = sge.SimpleHandler(SVM_KEY, _svm_parameter_handler)
 
 def _rfc_parameter_handler(values, application_data):
+    application_data.window[COMPUTE_KEY].update(disabled=False)
+
     application_data.window[KMEANS_PARAMETER_FRAME].update(visible=False)
     application_data.window[RFC_PARAMETER_FRAME].update(visible=False)
     application_data.window[SVM_PARAMETER_FRAME].update(visible=False)
@@ -248,36 +272,37 @@ layout = [
             [sg.Text("Rows x Columns:", key=SHAPE_KEY)],
             [sg.Text("Available Columns: "), sg.Text(key=COLUMN_NAME_KEY)],
             [sg.Text("Please read a .csv file to show the show the example structure of the data.", key=EXAMPLE_DATA_KEY)],
-        ], key=EXAMPLE_FRAME, visible=False)
-    ],
-    [
+        ], key=EXAMPLE_FRAME, visible=False),
         sg.Frame("Settings:", [
             [sg.Text("Already Preprocessed:  "), sg.Checkbox("", key=IS_PREPROCESSED_KEY)],
             [sg.Text("Replace Special Chars: "), sg.Checkbox("", key=SPECIAL_CHARS_KEY)],
             [
-                sg.Text("Dataset Type: "),
+                sg.Text("Dataset Type:* "),
                 sg.Radio("Unlabeled", group_id=DATASET_TYPE, key=RADIO_UNLABELED_KEY, enable_events=True),
                 sg.Radio("Labeled", group_id=DATASET_TYPE, key=RADIO_LABELED_KEY, enable_events=True)
             ],
-            [sg.Text("Data Column:  "), sg.Combo(list(), key=COL_DATA_KEY, size=(20,1), readonly=True)],
-            [sg.Text("Label Column: ", key=COL_LABEL_TEXT, visible=False), sg.InputCombo(list(), key=COL_LABEL_KEY, visible=False, size=(20,1), readonly=True)],
+            [sg.Text("Data Column:*  "), sg.Combo(list(), key=COL_DATA_KEY, size=(20,1), readonly=True)],
+            [sg.Text("Label Column:* ", key=COL_LABEL_TEXT, visible=False), sg.InputCombo(list(), key=COL_LABEL_KEY, visible=False, size=(20,1), readonly=True)],
         ], key=SETTINGS_FRAME, visible=False)
     ],
     [
         sg.Frame("Clustering:", [
             [sg.Text("Use Transformer: "), sg.Checkbox("", key=TRANSFORMER_KEY)],
-            [sg.Text("Select a clustering algorithm:")],
+            [sg.Text("Select a clustering algorithm:*")],
             [
-                sg.Radio("K-Means", group_id=ALGORITHM, key=KMEANS_KEY, disabled=True),
-                sg.Radio("Random Forest Classifier", group_id=ALGORITHM, key=RFC_KEY, disabled=True),
-                sg.Radio("Support Vector Machine", group_id=ALGORITHM, key=SVM_KEY, disabled=True),
-                sg.Radio("Neural Network", group_id=ALGORITHM, key=MLP_KEY, disabled=True),
-             ],
-            [sg.Frame("Parameters:", layout=kmeans_params, key=KMEANS_PARAMETER_FRAME, visible=True)],
-            [sg.Frame("Parameters:", layout=rfc_params, key=RFC_PARAMETER_FRAME, visible=True)],
-            [sg.Frame("Parameters:", layout=svm_params, key=SVM_PARAMETER_FRAME, visible=True)],
-            [sg.Frame("Parameters:", layout=mlp_params, key=MLP_PARAMETER_FRAME, visible=True)],
-            [sg.Button("Compute", key=COMPUTE_KEY)]
+                sg.Radio("K-Means", group_id=ALGORITHM, key=KMEANS_KEY, disabled=True, enable_events=True),
+                sg.Radio("Random Forest Classifier", group_id=ALGORITHM, key=RFC_KEY, disabled=True, enable_events=True),
+                sg.Radio("Support Vector Machine", group_id=ALGORITHM, key=SVM_KEY, disabled=True, enable_events=True),
+                sg.Radio("Neural Network", group_id=ALGORITHM, key=MLP_KEY, disabled=True, enable_events=True),
+            ],
+            # Parameter Frames
+            [
+                sg.Frame("Parameters:", kmeans_params, key=KMEANS_PARAMETER_FRAME, visible=False),
+                sg.Frame("Parameters:", rfc_params, key=RFC_PARAMETER_FRAME, visible=False),
+                sg.Frame("Parameters:", svm_params, key=SVM_PARAMETER_FRAME, visible=False),
+                sg.Frame("Parameters:", mlp_params, key=MLP_PARAMETER_FRAME, visible=False),
+            ],
+            [sg.Button("Compute", key=COMPUTE_KEY, disabled=True)]
         ], key=CLUSTERING_FRAME, visible=False)
     ],
     [

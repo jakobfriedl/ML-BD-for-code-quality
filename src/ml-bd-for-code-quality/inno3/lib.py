@@ -83,8 +83,11 @@ def word_embedding(df, data_col):
     return v.fit_transform(df[data_col])
 
 ## KMeans
-def k_means_gui(tf_idf, n_clusters):
-    km = KMeans(n_clusters, random_state=1)
+def k_means_gui(tf_idf, n_clusters, random_state):
+
+    print(n_clusters, random_state)
+
+    km = KMeans(n_clusters, random_state=random_state)
     model = km.fit(tf_idf)
     return model.predict(tf_idf)
 
@@ -192,8 +195,8 @@ def mlp_gui(features, labels, test_size, pca_components, neurons, hidden_layer):
 
     X_pred = mlp.predict(X_test)
 
-    acc = accuracy_score(X_pred, y_test)
-    return X_pred, acc
+    acc_score = accuracy_score(X_pred, y_test)
+    return (acc_score, X_pred)
 
 
 def mlp_gui_transformer(features, labels, test_size, pca_components, neurons, hidden_layer):

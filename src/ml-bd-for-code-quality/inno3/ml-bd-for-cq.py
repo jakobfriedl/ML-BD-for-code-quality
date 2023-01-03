@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 import time
 
 sg.theme("BlueMono")
+sg.set_options(font=("Andale Mono", 10))
 
 # Keys
 DATASET_KEY = "-DATASET-IN-"
@@ -42,7 +43,9 @@ MLP_PARAMETER_FRAME = "-MLP-PARAMETER-FRAME-"
 
 N_CLUSTERS = "-KMEANS-N-CLUSTERS-"
 RANDOM_STATE = "-KMEANS-RANDOM-STATE-"
-TEST_SIZE = "-TEST-SIZE-"
+TEST_SIZE_RFC = "-TEST-SIZE-RFC-"
+TEST_SIZE_SVM = "-TEST-SIZE-SVM-"
+TEST_SIZE_MLP = "-TEST-SIZE-MLP-"
 N_ESTIMATORS = "-RFC-ESTIMATORS-"
 MAX_DEPTH = "-RFC-MAX-DEPTH-"
 KERNEL_TYPE = "-SVM-KERNEL-TYPE-"
@@ -61,19 +64,27 @@ kmeans_params = [
 ]
 
 rfc_params = [
-    [sg.Text("Test-Size:", size=(15, 1)), sg.Slider(range=(0, 1), orientation='horizontal', size=(15,4), default_value=0.3, resolution=0.01, key=TEST_SIZE)],
+    [sg.Text("Test-Size:", size=(15, 1)),
+     sg.Slider(range=(0.01, 0.99), orientation='horizontal', size=(15, 4), default_value=0.3, resolution=0.01,
+               key=TEST_SIZE_RFC)],
     [sg.Text("Estimators: ", size=(15, 1)), sg.InputText(size=(5, 1), key=N_ESTIMATORS, default_text=100)],
-    [sg.Text("Max. Depth: ", size=(15, 1)), sg.InputText(size=(5, 1), key=MAX_DEPTH), sg.Text("(Leave blank for: max_depth=None)")],
+    [sg.Text("Max. Depth: ", size=(15, 1)), sg.InputText(size=(5, 1), key=MAX_DEPTH),
+     sg.Text("(Leave blank for: max_depth=None)")],
 ]
 
 svm_kernel_types = ['linear', 'poly', 'rbf']
 svm_params = [
-    [sg.Text("Test-Size:", size=(15, 1)), sg.Slider(range=(0, 1), orientation='horizontal', size=(15,4), default_value=0.3, resolution=0.01, key=TEST_SIZE)],
-    [sg.Text("Kernel Type:", size=(15, 1)), sg.Combo(values=svm_kernel_types, readonly=True, size=(15,1), key=KERNEL_TYPE, default_value='linear')]
+    [sg.Text("Test-Size:", size=(15, 1)),
+     sg.Slider(range=(0.01, 0.99), orientation='horizontal', size=(15, 4), default_value=0.3, resolution=0.01,
+               key=TEST_SIZE_SVM)],
+    [sg.Text("Kernel Type:", size=(15, 1)),
+     sg.Combo(values=svm_kernel_types, readonly=True, size=(15, 1), key=KERNEL_TYPE, default_value='linear')]
 ]
 
 mlp_params = [
-    [sg.Text("Test-Size:", size=(15, 1)), sg.Slider(range=(0, 1), orientation='horizontal', size=(15,4), default_value=0.3, resolution=0.01, key=TEST_SIZE)],
+    [sg.Text("Test-Size:", size=(15, 1)),
+     sg.Slider(range=(0.01, 0.99), orientation='horizontal', size=(15, 4), default_value=0.3, resolution=0.01,
+               key=TEST_SIZE_MLP)],
     [sg.Text("PCA Components: ", size=(15, 1)), sg.InputText(size=(5, 1), key=PCA_COMPONENTS, default_text=500)],
     [sg.Text("Neurons: ", size=(15, 1)), sg.InputText(size=(5, 1), key=N_NEURONS, default_text=1000)],
     [sg.Text("Hidden Layer: ", size=(15, 1)), sg.InputText(size=(5, 1), key=N_HIDDEN_LAYER, default_text=1)],
@@ -100,7 +111,8 @@ def _read_handler(values, application_data):
     application_data.window[COL_DATA_KEY].update(values=list(df.columns.values))
     application_data.window[COL_LABEL_KEY].update(values=list(df.columns.values))
 
-    application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}File loaded successfully. [{file}]\n")
+    application_data.window[LOG_KEY].update(
+        f"{application_data.window[LOG_KEY].get()}File loaded successfully. [{file}]\n")
 
 read_handler = sge.SimpleHandler(LOAD_KEY, _read_handler)
 
@@ -180,6 +192,19 @@ def _rfc_parameter_handler(values, application_data):
 
 mlp_parameter_handler = sge.SimpleHandler(MLP_KEY, _rfc_parameter_handler)
 
+def show_result_popup(algorithm, accuracy_score, param_dict):
+    params_display = list()
+    for key, value in param_dict.items():
+        params_display.append([sg.Text(f"    {key}: {value}")])
+
+    layout = [
+        [sg.Text(f"{algorithm} results", font=("Andale Mono", 12, "bold"))],
+        [sg.Frame("Parameters", layout=params_display)],
+        [sg.Text(f"Accuracy: {accuracy_score*100}%")],
+    ]
+    window = sg.Window("Results", layout, modal=True, finalize=True, use_default_focus=True)
+    window.read()
+
 def _compute_handler(values, application_data):
     print(values, application_data)
     application_data.window[LOG_KEY].update("")
@@ -203,57 +228,107 @@ def _compute_handler(values, application_data):
     application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Preprocessing started. {time.time()-start}\n")
     processed_df = df if is_processed else process_stack_trace_column(df, data_col, replace_special_chars)
     application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Preprocessing finished. {time.time()-start}\n")
-    print(processed_df)
+    # print(processed_df)
 
     # word embedding
     application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Word-Embedding started. {time.time()-start}\n")
     tf_idf = word_embedding(processed_df, data_col)
     application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Word-Embedding finished. {time.time()-start}\n")
-    print(tf_idf)
+    # print(tf_idf)
 
     # clustering
     if values[KMEANS_KEY]:
         # K-Means
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering started. [K-Means] {time.time()-start}\n")
-        result = k_means_gui(tf_idf, n_clusters=5)
+
+        # Parameters
+        clusters = int(values[N_CLUSTERS])
+        random_state = int(values[RANDOM_STATE])
+
+        result = k_means_gui(tf_idf, n_clusters=clusters, random_state=random_state)
         print(result)
+
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [K-Means] {time.time()-start}\n")
+
+        show_result_popup("K-Means", result[0], {
+            "Clusters": clusters,
+            "Random State": random_state
+        })
 
     elif values[RFC_KEY]:
         # Random Forest
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering started. [Random Forest Classifier] {time.time()-start}\n")
+
+        # Parameters
+        test_size = values[TEST_SIZE_RFC]
+        estimators = int(values[N_ESTIMATORS])
+        depth = int(values[MAX_DEPTH]) if values[MAX_DEPTH] != "" and values[MAX_DEPTH].isdigit() else None
+
         if use_transformer:
             #result = rfc_transformer_gui(df[label_col], model, )
             #print(result)
             print("not implemented yet")
         else:
-            result = rfc_gui(tf_idf, df[label_col], test_size=0.3, estimators=100, max_depth=100)
+            result = rfc_gui(tf_idf, df[label_col], test_size=test_size, estimators=estimators, max_depth=depth)
             print(result)
-        application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Random Forest Classifier] {time.time()-start}\n")
+
+            application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Random Forest Classifier] {time.time() - start}\n")
+
+            show_result_popup("Random Forest Classifier", result[0], {
+                "Test-Size": test_size,
+                "Estimators": estimators,
+                "Max. Depth": depth
+            })
 
     elif values[SVM_KEY]:
         # Support Vector Machine
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering started. [Support Vector Machine] {time.time()-start}\n")
+
+        # Parameters:
+        test_size = values[TEST_SIZE_SVM]
+        kernel = values[KERNEL_TYPE]
+
         if use_transformer:
             #result = svm_transformer_gui(df[label_col], model, )
             #print(result)
             print("not implemented yet")
         else:
-            result = svm_gui(tf_idf, df[label_col], test_size=0.3, kernel=values[KERNEL_TYPE])
+            result = svm_gui(tf_idf, df[label_col], test_size=test_size, kernel=kernel)
             print(result)
-        application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Support Vector Machine] {time.time()-start}\n")
+
+            application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Support Vector Machine] {time.time() - start}\n")
+
+            show_result_popup("Support Vector Machine", result[0], {
+                "Test-Size": test_size,
+                "Kernel Type": kernel
+            })
 
     elif values[MLP_KEY]:
         # Neural Network
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering started. [Neural Network] {time.time()-start}\n")
+
+        # Parameters
+        test_size = values[TEST_SIZE_MLP]
+        pca_components = int(values[PCA_COMPONENTS])
+        neurons = int(values[N_NEURONS])
+        hidden_layer = int(values[N_HIDDEN_LAYER])
+
         if use_transformer:
             #result = mlp_transformer_gui(df[label_col], model, )
             #print(result)
             print("not implemented yet")
         else:
-            result = mlp_gui(tf_idf, df[label_col], test_size=0.3, pca_components=500, neurons=1000, hidden_layer=1)
+            result = mlp_gui(tf_idf, df[label_col], test_size=test_size, pca_components=pca_components, neurons=neurons, hidden_layer=hidden_layer)
             print(result)
-        application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Neural Network] {time.time()-start}\n")
+
+            application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Neural Network] {time.time() - start}\n")
+
+            show_result_popup("Neural Network", result[0], {
+                "Test-Size": test_size,
+                "PCA Components": pca_components,
+                "Neurons": neurons,
+                "Hidden Layer": hidden_layer
+            })
 
 compute_handler = sge.SimpleHandler(COMPUTE_KEY, _compute_handler)
 
@@ -302,7 +377,9 @@ layout = [
                 sg.Frame("Parameters:", svm_params, key=SVM_PARAMETER_FRAME, visible=False),
                 sg.Frame("Parameters:", mlp_params, key=MLP_PARAMETER_FRAME, visible=False),
             ],
-            [sg.Button("Compute", key=COMPUTE_KEY, disabled=True)]
+            [
+                sg.Button("Compute", key=COMPUTE_KEY, disabled=True),
+            ]
         ], key=CLUSTERING_FRAME, visible=False)
     ],
     [

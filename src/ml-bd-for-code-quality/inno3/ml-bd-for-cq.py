@@ -192,15 +192,17 @@ def _rfc_parameter_handler(values, application_data):
 
 mlp_parameter_handler = sge.SimpleHandler(MLP_KEY, _rfc_parameter_handler)
 
-def show_result_popup(algorithm, accuracy_score, param_dict):
+def show_result_popup(algorithm, result, param_dict):
     params_display = list()
     for key, value in param_dict.items():
         params_display.append([sg.Text(f"    {key}: {value}")])
 
+    result = [sg.Text(f"Accuracy: {result*100}%")] if algorithm != "K-Means" else [sg.Text(f"Silhouette Score: {result}")]
+
     layout = [
         [sg.Text(f"{algorithm} results", font=("Andale Mono", 12, "bold"))],
         [sg.Frame("Parameters", layout=params_display)],
-        [sg.Text(f"Accuracy: {accuracy_score*100}%")],
+        result
     ]
     window = sg.Window("Results", layout, modal=True, finalize=True, use_default_focus=True)
     window.read()
@@ -250,7 +252,7 @@ def _compute_handler(values, application_data):
 
         application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [K-Means] {time.time()-start}\n")
 
-        show_result_popup("K-Means", result[0], {
+        show_result_popup("K-Means", result, {
             "Clusters": clusters,
             "Random State": random_state
         })

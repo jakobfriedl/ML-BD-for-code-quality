@@ -14,11 +14,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.preprocessing import MaxAbsScaler
 from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.neural_network import MLPClassifier
-
-
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+from sklearn.metrics import silhouette_score
 
 # Preprocessing
 def replace_special_characters(words):
@@ -84,12 +84,10 @@ def word_embedding(df, data_col):
 
 ## KMeans
 def k_means_gui(tf_idf, n_clusters, random_state):
-
-    print(n_clusters, random_state)
-
     km = KMeans(n_clusters, random_state=random_state)
-    model = km.fit(tf_idf)
-    return model.predict(tf_idf)
+    model = km.fit_predict(tf_idf)
+    score = silhouette_score(tf_idf, model)
+    return score
 
 ## Random Forest Classifier 
 def rfc_gui(features, labels, test_size, estimators, max_depth):

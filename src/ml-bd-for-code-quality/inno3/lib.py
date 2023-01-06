@@ -19,6 +19,7 @@ from sklearn.neural_network import MLPClassifier
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from sklearn.metrics import silhouette_score
+from sentence_transformers import SentenceTransformer
 
 # Preprocessing
 def replace_special_characters(words):
@@ -82,6 +83,13 @@ def word_embedding(df, data_col):
     v = TfidfVectorizer(use_idf=True)
     return v.fit_transform(df[data_col])
 
+## Transformer
+def transformer(dataframe):
+    model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2', device='cpu')
+    # Encode all sentences
+    embedding = model.encode(dataframe)
+    return embedding
+
 ## KMeans
 def k_means_gui(tf_idf, n_clusters, random_state):
     km = KMeans(n_clusters, random_state=random_state)
@@ -99,8 +107,14 @@ def rfc_gui(features, labels, test_size, estimators, max_depth):
     return(acc_score, rfc_score)
 
 
-def rfc_gui_transformer(features, labels, test_size, estimators, max_depth):
-    print("TODO")
+def rfc_transformer_gui(df_processed, data_col, labels, test_size, estimators, max_depth):
+    transformer_result = transformer(df_processed[data_col].tolist())
+    X_train, X_test, y_train, y_test = train_test_split(transformer_result, labels, test_size=test_size)
+    rfc = RandomForestClassifier(n_estimators=estimators, max_depth=max_depth)
+    rfc.fit(X_train, y_train)  # Train model using training sets
+    acc_score = accuracy_score(y_test, rfc.predict(X_test))
+    rfc_score = rfc.score(X_test, y_test)
+    return (acc_score, rfc_score)
 
 ## Support Vector Machine
 def svm_gui(features, labels, test_size, kernel):
@@ -112,8 +126,14 @@ def svm_gui(features, labels, test_size, kernel):
     return(acc_score, svm_score)
 
 
-def svm_gui_transformer(features, labels, test_size, kernel):
-    print("TODO")
+def svm_transformer_gui(df_processed, data_col, labels, test_size, kernel):
+    transformer_result = transformer(df_processed[data_col].tolist())
+    X_train, X_test, y_train, y_test = train_test_split(transformer_result, labels, test_size=test_size)
+    svm = SVC(kernel=kernel)
+    svm.fit(X_train, y_train)
+    acc_score = accuracy_score(y_test, svm.predict(X_test))
+    svm_score = svm.score(X_test, y_test)
+    return (acc_score, svm_score)
 
 ## Neural Network# rfc(start, X_train, X_test, y_train, y_test)
 def mlp_gui(features, labels, test_size, pca_components, neurons, hidden_layer):
@@ -197,7 +217,85 @@ def mlp_gui(features, labels, test_size, pca_components, neurons, hidden_layer):
     return (acc_score, X_pred)
 
 
-def mlp_gui_transformer(features, labels, test_size, pca_components, neurons, hidden_layer):
-    print("TODO")
+def mlp_transformer_gui(df_processed, data_col, labels, test_size, pca_components, neurons, hidden_layer):
+    transformer_result = transformer(df_processed[data_col].tolist())
 
+    pca_components = 200
+    X_train, X_test, y_train, y_test = train_test_split(transformer_result, labels, test_size=test_size)
 
+    scaler = MaxAbsScaler()
+    X_train = scaler.fit_transform(X_train)
+
+    pca = PCA(n_components=pca_components)
+
+    # Applying the dimensionality reduction
+    # toarray() to convert to a dense numpy array
+    pca.fit(X_train)
+    X_train = pca.fit_transform(X_train)
+    pca.fit(X_test)
+    X_test = pca.transform(X_test)
+
+    # PCA Plots
+    # 2D Plot
+    if pca.n_components == 2:
+        Xax = X_train[:, 0]
+        Yax = X_train[:, 1]
+        fig, ax = plt.subplots(figsize=(7, 5))
+        fig.patch.set_facecolor('white')
+        for l in np.unique(y_train):
+            ix = np.where(y_train == l)
+            ax.scatter(Xax[ix], Yax[ix])
+
+        plt.xlabel("First Principal Component", fontsize=14)
+        plt.ylabel("Second Principal Component", fontsize=14)
+        plt.legend()
+        plt.show()
+
+    # 3D plot
+    if pca.n_components == 3:
+        Xax = X_train[:, 0]
+        Yax = X_train[:, 1]
+        Zax = X_train[:, 2]
+        fig = plt.figure(figsize=(7, 5))
+        ax = fig.add_subplot(111, projection='3d')
+
+        fig.patch.set_facecolor('white')
+        for l in np.unique(y_train):
+            ix = np.where(y_train == l)
+            ax.scatter(Xax[ix], Yax[ix], Zax[ix])
+
+        ax.set_xlabel("First Principal Component", fontsize=14)
+        ax.set_ylabel("Second Principal Component", fontsize=14)
+        ax.set_zlabel("Third Principal Component", fontsize=14)
+        ax.legend()
+        plt.show()
+
+    # Plotting the evaluation of the number of components
+    plt.rcParams["figure.figsize"] = (18, 6)
+    fig, ax = plt.subplots()
+    arange_limit = pca.n_components + 1
+    xi = np.arange(1, arange_limit, step=1)
+    y = np.cumsum(pca.explained_variance_ratio_)
+    plt.ylim(0.0, 1.1)
+    plt.plot(xi, y, marker='o', linestyle='--', color='b')
+
+    plt.xlabel('Number of Components')
+    plt.xticks(np.arange(0, pca.n_components + 5, step=pca.n_components / 10))
+    plt.ylabel('Cumulative variance (%)')
+    plt.title('The number of components needed to explain variance')
+
+    plt.axhline(y=0.95, color='r', linestyle='-')
+    plt.text(0.5, 0.85, '95% cut-off threshold', color='red', fontsize=16)
+
+    ax.grid(axis='x')
+    plt.show()
+
+    mlp = (MLPClassifier(hidden_layer_sizes=(neurons, hidden_layer), max_iter=1000,
+                         learning_rate_init=0.001))
+    mlp.fit(X_train, y_train)
+
+    X_pred = mlp.predict(X_test)
+
+    # Calculate and display accuracy
+    acc_score = accuracy_score(X_pred, y_test)
+    return (acc_score, X_pred)

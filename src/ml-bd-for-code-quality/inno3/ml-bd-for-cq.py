@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import PySimpleGUI_Events as sge
 import pandas as pd
-from lib import process_stack_trace_column, word_embedding, k_means_gui, rfc_gui, svm_gui, mlp_gui
+from lib import process_stack_trace_column, word_embedding, k_means_gui, rfc_gui, svm_gui, mlp_gui, rfc_transformer_gui, svm_transformer_gui, mlp_transformer_gui
 from sklearn.model_selection import train_test_split
 import time
 
@@ -267,9 +267,8 @@ def _compute_handler(values, application_data):
         depth = int(values[MAX_DEPTH]) if values[MAX_DEPTH] != "" and values[MAX_DEPTH].isdigit() else None
 
         if use_transformer:
-            #result = rfc_transformer_gui(df[label_col], model, )
-            #print(result)
-            print("not implemented yet")
+            result = rfc_transformer_gui(processed_df, data_col, df[label_col], test_size=test_size, estimators=estimators, max_depth=depth)
+            print(result)
         else:
             result = rfc_gui(tf_idf, df[label_col], test_size=test_size, estimators=estimators, max_depth=depth)
             print(result)
@@ -291,9 +290,8 @@ def _compute_handler(values, application_data):
         kernel = values[KERNEL_TYPE]
 
         if use_transformer:
-            #result = svm_transformer_gui(df[label_col], model, )
-            #print(result)
-            print("not implemented yet")
+            result = svm_transformer_gui(processed_df, data_col, df[label_col], test_size=test_size, kernel=kernel)
+            print(result)
         else:
             result = svm_gui(tf_idf, df[label_col], test_size=test_size, kernel=kernel)
             print(result)
@@ -316,9 +314,8 @@ def _compute_handler(values, application_data):
         hidden_layer = int(values[N_HIDDEN_LAYER])
 
         if use_transformer:
-            #result = mlp_transformer_gui(df[label_col], model, )
-            #print(result)
-            print("not implemented yet")
+            result = mlp_transformer_gui(processed_df, data_col, df[label_col], test_size=test_size, pca_components=pca_components, neurons=neurons, hidden_layer=hidden_layer)
+            print(result)
         else:
             result = mlp_gui(tf_idf, df[label_col], test_size=test_size, pca_components=pca_components, neurons=neurons, hidden_layer=hidden_layer)
             print(result)

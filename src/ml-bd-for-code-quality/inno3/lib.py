@@ -21,6 +21,7 @@ import matplotlib.cm as cm
 from sklearn.metrics import silhouette_score
 from sentence_transformers import SentenceTransformer
 
+
 # Preprocessing
 def replace_special_characters(words):
     return [characters[w] if w in characters else w for w in words]
@@ -152,61 +153,6 @@ def mlp_gui(features, labels, test_size, pca_components, neurons, hidden_layer):
     pca.fit(X_test.toarray())
     X_test = pca.transform(X_test.toarray())
 
-    # PCA Plots
-    # 2D Plot
-    if pca.n_components == 2:
-        Xax = X_train[:, 0]
-        Yax = X_train[:, 1]
-        fig, ax = plt.subplots(figsize=(7, 5))
-        fig.patch.set_facecolor('white')
-        for l in np.unique(y_train):
-            ix = np.where(y_train == l)
-            ax.scatter(Xax[ix], Yax[ix])
-
-        plt.xlabel("First Principal Component", fontsize=14)
-        plt.ylabel("Second Principal Component", fontsize=14)
-        plt.legend()
-        plt.show()
-
-    # 3D plot
-    if pca.n_components == 3:
-        Xax = X_train[:, 0]
-        Yax = X_train[:, 1]
-        Zax = X_train[:, 2]
-        fig = plt.figure(figsize=(7, 5))
-        ax = fig.add_subplot(111, projection='3d')
-
-        fig.patch.set_facecolor('white')
-        for l in np.unique(y_train):
-            ix = np.where(y_train == l)
-            ax.scatter(Xax[ix], Yax[ix], Zax[ix])
-
-        ax.set_xlabel("First Principal Component", fontsize=14)
-        ax.set_ylabel("Second Principal Component", fontsize=14)
-        ax.set_zlabel("Third Principal Component", fontsize=14)
-        ax.legend()
-        plt.show()
-
-    # Plotting the evaluation of the number of components
-    plt.rcParams["figure.figsize"] = (18, 6)
-    fig, ax = plt.subplots()
-    arange_limit = pca.n_components + 1
-    xi = np.arange(1, arange_limit, step=1)
-    y = np.cumsum(pca.explained_variance_ratio_)
-    plt.ylim(0.0, 1.1)
-    plt.plot(xi, y, marker='o', linestyle='--', color='b')
-
-    plt.xlabel('Number of Components')
-    plt.xticks(np.arange(0, pca.n_components + 5, step=pca.n_components / 10))
-    plt.ylabel('Cumulative variance (%)')
-    plt.title('The number of components needed to explain variance')
-
-    plt.axhline(y=0.95, color='r', linestyle='-')
-    plt.text(0.5, 0.85, '95% cut-off threshold', color='red', fontsize=16)
-
-    ax.grid(axis='x')
-    plt.show()
-
     mlp = (MLPClassifier(hidden_layer_sizes=(neurons, hidden_layer), max_iter=1000,
                          learning_rate_init=0.001))
     mlp.fit(X_train, y_train)
@@ -234,61 +180,6 @@ def mlp_transformer_gui(df_processed, data_col, labels, test_size, pca_component
     X_train = pca.fit_transform(X_train)
     pca.fit(X_test)
     X_test = pca.transform(X_test)
-
-    # PCA Plots
-    # 2D Plot
-    if pca.n_components == 2:
-        Xax = X_train[:, 0]
-        Yax = X_train[:, 1]
-        fig, ax = plt.subplots(figsize=(7, 5))
-        fig.patch.set_facecolor('white')
-        for l in np.unique(y_train):
-            ix = np.where(y_train == l)
-            ax.scatter(Xax[ix], Yax[ix])
-
-        plt.xlabel("First Principal Component", fontsize=14)
-        plt.ylabel("Second Principal Component", fontsize=14)
-        plt.legend()
-        plt.show()
-
-    # 3D plot
-    if pca.n_components == 3:
-        Xax = X_train[:, 0]
-        Yax = X_train[:, 1]
-        Zax = X_train[:, 2]
-        fig = plt.figure(figsize=(7, 5))
-        ax = fig.add_subplot(111, projection='3d')
-
-        fig.patch.set_facecolor('white')
-        for l in np.unique(y_train):
-            ix = np.where(y_train == l)
-            ax.scatter(Xax[ix], Yax[ix], Zax[ix])
-
-        ax.set_xlabel("First Principal Component", fontsize=14)
-        ax.set_ylabel("Second Principal Component", fontsize=14)
-        ax.set_zlabel("Third Principal Component", fontsize=14)
-        ax.legend()
-        plt.show()
-
-    # Plotting the evaluation of the number of components
-    plt.rcParams["figure.figsize"] = (18, 6)
-    fig, ax = plt.subplots()
-    arange_limit = pca.n_components + 1
-    xi = np.arange(1, arange_limit, step=1)
-    y = np.cumsum(pca.explained_variance_ratio_)
-    plt.ylim(0.0, 1.1)
-    plt.plot(xi, y, marker='o', linestyle='--', color='b')
-
-    plt.xlabel('Number of Components')
-    plt.xticks(np.arange(0, pca.n_components + 5, step=pca.n_components / 10))
-    plt.ylabel('Cumulative variance (%)')
-    plt.title('The number of components needed to explain variance')
-
-    plt.axhline(y=0.95, color='r', linestyle='-')
-    plt.text(0.5, 0.85, '95% cut-off threshold', color='red', fontsize=16)
-
-    ax.grid(axis='x')
-    plt.show()
 
     mlp = (MLPClassifier(hidden_layer_sizes=(neurons, hidden_layer), max_iter=1000,
                          learning_rate_init=0.001))

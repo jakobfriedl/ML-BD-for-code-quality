@@ -128,6 +128,8 @@ def _radio_labeled_handler(values, application_data):
     application_data.window[SVM_KEY].update(disabled=False)
     application_data.window[MLP_KEY].update(disabled=False)
 
+    application_data.window[TRANSFORMER_KEY].update(disabled=False)
+
     application_data.window[KMEANS_PARAMETER_FRAME].update(visible=False)
 
 radio_labeled_handler = sge.SimpleHandler(RADIO_LABELED_KEY, _radio_labeled_handler)
@@ -145,6 +147,8 @@ def _radio_unlabeled_handler(values, application_data):
     application_data.window[SVM_KEY].update(False)
     application_data.window[MLP_KEY].update(disabled=True)
     application_data.window[MLP_KEY].update(False)
+
+    application_data.window[TRANSFORMER_KEY].update(disabled=True)
 
     application_data.window[RFC_PARAMETER_FRAME].update(visible=False)
     application_data.window[SVM_PARAMETER_FRAME].update(visible=False)
@@ -273,13 +277,13 @@ def _compute_handler(values, application_data):
             result = rfc_gui(tf_idf, df[label_col], test_size=test_size, estimators=estimators, max_depth=depth)
             print(result)
 
-            application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Random Forest Classifier] {time.time() - start}\n")
+        application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Random Forest Classifier] {time.time() - start}\n")
 
-            show_result_popup("Random Forest Classifier", result[0], {
-                "Test-Size": test_size,
-                "Estimators": estimators,
-                "Max. Depth": depth
-            })
+        show_result_popup("Random Forest Classifier", result[0], {
+            "Test-Size": test_size,
+            "Estimators": estimators,
+            "Max. Depth": depth
+        })
 
     elif values[SVM_KEY]:
         # Support Vector Machine
@@ -296,12 +300,12 @@ def _compute_handler(values, application_data):
             result = svm_gui(tf_idf, df[label_col], test_size=test_size, kernel=kernel)
             print(result)
 
-            application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Support Vector Machine] {time.time() - start}\n")
+        application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Support Vector Machine] {time.time() - start}\n")
 
-            show_result_popup("Support Vector Machine", result[0], {
-                "Test-Size": test_size,
-                "Kernel Type": kernel
-            })
+        show_result_popup("Support Vector Machine", result[0], {
+            "Test-Size": test_size,
+            "Kernel Type": kernel
+        })
 
     elif values[MLP_KEY]:
         # Neural Network
@@ -320,14 +324,14 @@ def _compute_handler(values, application_data):
             result = mlp_gui(tf_idf, df[label_col], test_size=test_size, pca_components=pca_components, neurons=neurons, hidden_layer=hidden_layer)
             print(result)
 
-            application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Neural Network] {time.time() - start}\n")
+        application_data.window[LOG_KEY].update(f"{application_data.window[LOG_KEY].get()}Clustering finished. [Neural Network] {time.time() - start}\n")
 
-            show_result_popup("Neural Network", result[0], {
-                "Test-Size": test_size,
-                "PCA Components": pca_components,
-                "Neurons": neurons,
-                "Hidden Layer": hidden_layer
-            })
+        show_result_popup("Neural Network", result[0], {
+            "Test-Size": test_size,
+            "PCA Components": pca_components,
+            "Neurons": neurons,
+            "Hidden Layer": hidden_layer
+        })
 
 compute_handler = sge.SimpleHandler(COMPUTE_KEY, _compute_handler)
 
@@ -361,7 +365,7 @@ layout = [
     ],
     [
         sg.Frame("Clustering:", [
-            [sg.Text("Use Transformer: "), sg.Checkbox("", key=TRANSFORMER_KEY)],
+            [sg.Text("Use Transformer: "), sg.Checkbox("", key=TRANSFORMER_KEY, disabled=True)],
             [sg.Text("Select a clustering algorithm:*")],
             [
                 sg.Radio("K-Means", group_id=ALGORITHM, key=KMEANS_KEY, disabled=True, enable_events=True),
